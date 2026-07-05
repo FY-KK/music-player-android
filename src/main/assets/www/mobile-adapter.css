@@ -1,4 +1,4 @@
-/* Mineradio Mobile Adapter v4 - 修复响应式布局 */
+/* Mineradio Mobile Adapter v5 - 横屏布局 */
 
 @media (pointer: coarse), (hover: none), (max-width: 768px) {
   /* ========== 全局修复 ========== */
@@ -35,7 +35,7 @@
     display: none !important;
   }
 
-  /* ========== 核心布局修复 ========== */
+  /* ========== 核心布局 - 横向排列 ========== */
   #empty-home {
     position: relative !important;
     left: auto !important;
@@ -50,10 +50,11 @@
     pointer-events: auto !important;
   }
 
-  /* 关键修复：移除固定最小宽度 */
+  /* 横向布局：左右排列 */
   .empty-home-shell {
-    display: flex !important;
-    flex-direction: column !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: auto 1fr !important;
     gap: 12px !important;
     height: auto !important;
     min-height: auto !important;
@@ -61,12 +62,13 @@
     padding-bottom: 100px !important;
   }
 
-  /* Hero区域适配 */
+  /* Hero区域 - 左侧 */
   .home-hero {
+    grid-column: 1 !important;
+    grid-row: 1 / -1 !important;
     min-height: auto !important;
     padding: 20px !important;
     border-radius: 18px !important;
-    grid-row: auto !important;
   }
 
   .home-hero-inner {
@@ -81,104 +83,113 @@
   }
 
   .home-title {
-    font-size: clamp(24px, 6vw, 36px) !important;
+    font-size: clamp(20px, 4vw, 32px) !important;
     max-width: 100% !important;
   }
 
   .home-sub {
-    font-size: 12px !important;
+    font-size: 11px !important;
     max-width: 100% !important;
+    line-height: 1.4 !important;
   }
 
-  /* ========== 歌单列表修复 ========== */
+  /* ========== 右侧内容区 ========== */
   .home-rail {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
     width: 100% !important;
     max-width: 100% !important;
     overflow: visible !important;
   }
 
-  .home-tile-row {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px !important;
-    width: 100% !important;
-  }
-
-  .home-tile {
-    min-height: 120px !important;
-    padding: 10px !important;
-    border-radius: 16px !important;
-  }
-
-  .home-tile-cover {
-    height: 60px !important;
-    border-radius: 12px !important;
-    margin-bottom: 8px !important;
-  }
-
-  .home-tile-title {
-    font-size: 11px !important;
-  }
-
-  /* ========== 歌单卡片修复 ========== */
   .home-grid {
+    grid-column: 2 !important;
+    grid-row: 2 !important;
     display: grid !important;
     grid-template-columns: 1fr !important;
     gap: 10px !important;
     width: 100% !important;
+    max-height: 70vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
   }
 
-  .home-card {
+  /* ========== 歌单列表 - 横向2列 ========== */
+  .home-tile-row {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    width: 100% !important;
+  }
+
+  .home-tile {
     min-height: 100px !important;
-    padding: 14px !important;
-    border-radius: 18px !important;
-  }
-
-  .home-card-title {
-    font-size: 14px !important;
-    max-width: 70% !important;
-  }
-
-  .home-card-sub {
-    font-size: 10px !important;
-    max-width: 65% !important;
-  }
-
-  .home-card-art {
-    width: 60px !important;
-    height: 60px !important;
+    padding: 8px !important;
     border-radius: 14px !important;
   }
 
-  /* ========== 每日热评修复 ========== */
+  .home-tile-cover {
+    height: 50px !important;
+    border-radius: 10px !important;
+    margin-bottom: 6px !important;
+  }
+
+  .home-tile-title {
+    font-size: 10px !important;
+  }
+
+  /* ========== 歌单卡片 ========== */
+  .home-card {
+    min-height: 80px !important;
+    padding: 12px !important;
+    border-radius: 14px !important;
+  }
+
+  .home-card-title {
+    font-size: 12px !important;
+    max-width: 65% !important;
+  }
+
+  .home-card-sub {
+    font-size: 9px !important;
+    max-width: 60% !important;
+  }
+
+  .home-card-art {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 12px !important;
+  }
+
+  /* ========== 每日热评 ========== */
   .daily-review-card {
-    min-height: 280px !important;
-    padding: 20px !important;
-    border-radius: 18px !important;
+    min-height: 200px !important;
+    padding: 16px !important;
+    border-radius: 14px !important;
   }
 
   .daily-review-time {
-    font-size: clamp(28px, 8vw, 48px) !important;
+    font-size: clamp(24px, 6vw, 40px) !important;
   }
 
   .daily-review-quote {
-    font-size: clamp(16px, 4vw, 24px) !important;
-    margin-top: 16px !important;
+    font-size: clamp(14px, 3vw, 20px) !important;
+    margin-top: 12px !important;
   }
 
   .daily-review-actions {
     flex-wrap: wrap !important;
-    gap: 8px !important;
-    margin-top: 16px !important;
+    gap: 6px !important;
+    margin-top: 12px !important;
   }
 
   .daily-review-actions button {
-    height: 36px !important;
-    padding: 0 14px !important;
-    font-size: 12px !important;
+    height: 32px !important;
+    padding: 0 12px !important;
+    font-size: 11px !important;
   }
 
-  /* ========== 搜索区域修复 ========== */
+  /* ========== 搜索区域 ========== */
   #search-area {
     position: fixed !important;
     top: 0 !important;
@@ -187,7 +198,7 @@
     width: 100% !important;
     max-width: 100% !important;
     transform: none !important;
-    padding: 8px !important;
+    padding: 6px 8px !important;
     box-sizing: border-box !important;
     z-index: 100 !important;
   }
@@ -199,8 +210,8 @@
 
   #search-box {
     width: 100% !important;
-    height: 44px !important;
-    border-radius: 12px !important;
+    height: 40px !important;
+    border-radius: 10px !important;
   }
 
   #search-results {
@@ -210,7 +221,7 @@
     left: 0 !important;
   }
 
-  /* ========== 标签栏修复 ========== */
+  /* ========== 标签栏 ========== */
   .search-mode-tabs {
     width: 100% !important;
     max-width: 100% !important;
@@ -222,13 +233,14 @@
 
   .search-mode-tabs button {
     flex-shrink: 0 !important;
-    min-width: 60px !important;
+    min-width: 50px !important;
+    font-size: 10px !important;
   }
 
   /* ========== 右上角按钮 ========== */
   #top-right {
     position: fixed !important;
-    top: 56px !important;
+    top: 50px !important;
     right: 8px !important;
     z-index: 90 !important;
   }
@@ -245,29 +257,34 @@
     box-sizing: border-box !important;
   }
 
-  /* ========== 弹窗修复 ========== */
+  /* ========== 弹窗 ========== */
   .wallpaper-picker-card,
   .playlist-select-dialog,
   .playlist-import-dialog {
-    width: 95vw !important;
-    max-width: 95vw !important;
+    width: 90vw !important;
+    max-width: 90vw !important;
     max-height: 85vh !important;
     margin: 5vh auto !important;
     overflow: auto !important;
   }
 
   .wallpaper-picker-grid {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   /* ========== 区域标题 ========== */
   .home-section-head {
-    min-height: 30px !important;
-    padding: 0 4px !important;
+    min-height: 26px !important;
+    padding: 0 2px !important;
+    margin-bottom: 6px !important;
   }
 
   .home-section-title {
-    font-size: 13px !important;
+    font-size: 12px !important;
+  }
+
+  .home-section-note {
+    font-size: 10px !important;
   }
 
   /* ========== 安全区域 ========== */
@@ -277,7 +294,7 @@
     }
 
     #search-area {
-      padding-top: calc(env(safe-area-inset-top) + 8px) !important;
+      padding-top: calc(env(safe-area-inset-top) + 6px) !important;
     }
 
     #player-bar,
@@ -288,6 +305,63 @@
     .empty-home-shell {
       padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
     }
+  }
+}
+
+/* ========== 超小屏幕适配 ========== */
+@media (pointer: coarse), (hover: none), (max-width: 480px) {
+  .empty-home-shell {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-hero {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  .home-rail {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+  }
+
+  .home-grid {
+    grid-column: 1 !important;
+    grid-row: auto !important;
+    max-height: none !important;
+  }
+
+  .home-tile-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* ========== 横屏模式优化 ========== */
+@media (orientation: landscape) and (max-height: 500px) {
+  .empty-home-shell {
+    grid-template-columns: 1fr 1.5fr !important;
+  }
+
+  .home-hero {
+    min-height: auto !important;
+    padding: 14px !important;
+  }
+
+  .home-title {
+    font-size: clamp(18px, 3vw, 28px) !important;
+  }
+
+  .daily-review-card {
+    min-height: 150px !important;
+    padding: 12px !important;
+  }
+
+  #player-bar,
+  #bottom-player {
+    height: 50px !important;
+  }
+
+  .empty-home-shell {
+    padding-bottom: 60px !important;
   }
 }
 
