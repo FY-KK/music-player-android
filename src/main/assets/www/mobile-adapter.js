@@ -1,4 +1,4 @@
-// Mineradio Mobile Adapter v4 - 修复响应式布局
+// Mineradio Mobile Adapter v5 - 返回功能修复
 
 (function() {
   'use strict';
@@ -8,7 +8,7 @@
 
   if (!isMobile && !isSmallScreen) return;
 
-  console.log('[MobileAdapter] 初始化 v4');
+  console.log('[MobileAdapter] 初始化 v5');
 
   // 添加标记
   document.documentElement.classList.add('mobile-device');
@@ -20,13 +20,19 @@
     leftCount: 0,
     rightCount: 0,
     lastSwipeTime: 0,
+    lastSwipeSide: null,
     timer: null
   };
+
+  // 提示元素
+  let hint = null;
 
   function init() {
     setupViewport();
     fixLayout();
+    createHintElement();
     setupSwipeExit();
+    setupBackButton();
     observeDOM();
 
     // 使用 requestAnimationFrame 优化性能
@@ -47,6 +53,33 @@
 
     console.log('[MobileAdapter] 初始化完成');
   }
+
+  // 创建提示元素
+  function createHintElement() {
+    hint = document.createElement('div');
+    hint.id = 'swipe-exit-hint';
+    document.body.appendChild(hint);
+  }
+
+  // 显示提示
+  function showHint(text, side) {
+    if (!hint) return;
+    hint.textContent = text;
+    hint.className = (side || 'center') + ' show';
+
+    if (swipeState.timer) {
+      clearTimeout(swipeState.timer);
+    }
+
+    swipeState.timer = setTimeout(function() {
+      hint.className = '';
+    }, 1500);
+  }
+
+  // 全局函数：显示返回按钮提示
+  window.showBackPressHint = function() {
+    showHint('再按一次返回键退出应用', 'center');
+  };
 
   // 设置视口
   function setupViewport() {
@@ -127,11 +160,6 @@
     let isSwiping = false;
     let swipeSide = null;
 
-    // 创建提示元素
-    const hint = document.createElement('div');
-    hint.id = 'swipe-exit-hint';
-    document.body.appendChild(hint);
-
     document.addEventListener('touchstart', function(e) {
       const touch = e.touches[0];
       touchStartX = touch.clientX;
@@ -209,50 +237,45 @@
       if (count >= 2) {
         exitApp();
       } else {
-        showExitHint(side, count);
+        showHint('再滑动' + (2 - count) + '次退出应用', side);
       }
     }
+  }
 
-    function showExitHint(side, count) {
-      const remaining = 2 - count;
-      hint.textContent = '再滑动' + remaining + '次退出应用';
-      hint.className = side + ' show';
+  // 设置返回按钮
+  function setupBackButton() {
+    // 监听浏览器后退按钮
+    window.addEventListener('popstate', function(e) {
+      // 如果有历史记录，允许后退
+      // 否则显示退出提示
+    });
 
-      if (swipeState.timer) {
-        clearTimeout(swipeState.timer);
-      }
+    // 添加一个历史记录条目，用于拦截返回
+    history.pushState({ page: 'home' }, '', '');
+  }
 
-      swipeState.timer = setTimeout(function() {
-        hint.className = '';
-      }, 1500);
+  // 退出应用
+  function exitApp() {
+    showHint('正在退出...', 'center');
+
+    swipeState.leftCount = 0;
+    swipeState.rightCount = 0;
+
+    // 尝试Capacitor退出
+    if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
+      window.Capacitor.Plugins.App.exitApp();
     }
-
-    function exitApp() {
-      hint.textContent = '正在退出...';
-      hint.className = (swipeState.lastSwipeSide || 'left') + ' show';
-
-      swipeState.leftCount = 0;
-      swipeState.rightCount = 0;
-
-      // 尝试Capacitor退出
-      if (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.App) {
-        window.Capacitor.Plugins.App.exitApp();
-      }
-      // 尝试Android WebView退出
-      else if (window.Android && window.Android.exitApp) {
-        window.Android.exitApp();
-      }
-      // history.back
-      else if (window.history.length > 1) {
-        window.history.back();
-      }
-      else {
-        window.close();
-      }
-
-      setTimeout(function() {
-        hint.className = '';
-      }, 1000);
+    // 尝试Android WebView退出
+    else if (window.Android && window.Android.exitApp) {
+      window.Android.exitApp();
+    }
+    // 尝试navigator.app退出
+    else if (navigator.app && navigator.app.exitApp) {
+      navigator.app.exitApp();
+    }
+    // 最后尝试
+    else {
+      window.close();
     }
   }
 
