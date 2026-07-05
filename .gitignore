@@ -1,0 +1,30 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs
+dist/
+build/
+*.apk
+*.aab
+
+# Android
+android/app/build/
+android/.gradle/
+android/capacitor.build.gradle
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Capacitor
+android/app/src/main/assets/capacitor.config.json
