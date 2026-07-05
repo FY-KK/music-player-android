@@ -4,10 +4,31 @@
   "webDir": "src/main/assets/www",
   "server": {
     "androidScheme": "https",
-    "allowNavigation": ["*"]
+    "allowNavigation": [
+      "music.163.com",
+      "*.music.163.com",
+      "y.qq.com",
+      "*.y.qq.com",
+      "*.gtimg.cn",
+      "*.qq.com",
+      "api.open-meteo.com",
+      "geocoding-api.open-meteo.com"
+    ]
   },
   "android": {
     "allowMixedContent": true,
+    "backgroundColor": "#000000",
     "webContentsDebuggingEnabled": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": false,
+      "backgroundColor": "#000000",
+      "showSpinner": false
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#000000"
+    }
   }
 }
