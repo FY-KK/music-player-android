@@ -1,386 +1,337 @@
-/* Mineradio Mobile Adapter - 手机端适配样式 v2 */
+/* Mineradio Mobile Adapter v3 - 仅移动端生效 */
 
-/* ========== 全局重置 ========== */
-html, body {
-  overflow: auto !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
-  height: auto !important;
-  min-height: 100vh !important;
-  width: 100% !important;
-  max-width: 100vw !important;
-  position: relative !important;
-  touch-action: pan-y !important;
-  -webkit-overflow-scrolling: touch !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-/* ========== 桌面端元素禁用 ========== */
-#desktop-window-shell {
-  display: block !important;
-  position: relative !important;
-  inset: auto !important;
-  overflow: visible !important;
-  border-radius: 0 !important;
-  clip-path: none !important;
-  box-shadow: none !important;
-  transform: none !important;
-  width: 100% !important;
-  min-height: 100vh !important;
-  max-width: 100vw !important;
-}
-
-#desktop-titlebar,
-.desktop-mode-btn,
-.desktop-window-controls,
-.desktop-resize-handle,
-.desktop-drag-region,
-#fullscreen-diy-zone {
-  display: none !important;
-}
-
-/* ========== 搜索区域 ========== */
-#search-area {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
-  max-width: 100vw !important;
-  transform: none !important;
-  padding: 8px !important;
-  box-sizing: border-box !important;
-  z-index: 100 !important;
-}
-
-#search-stack {
-  width: 100% !important;
-  max-width: 100% !important;
-}
-
-#search-box {
-  width: 100% !important;
-  height: 48px !important;
-  border-radius: 12px !important;
-}
-
-/* ========== 搜索结果 ========== */
-#search-results {
-  width: 100% !important;
-  max-width: 100% !important;
-  max-height: 60vh !important;
-  left: 0 !important;
-  right: 0 !important;
-}
-
-/* ========== 右上角按钮 ========== */
-#top-right {
-  position: fixed !important;
-  top: 60px !important;
-  right: 10px !important;
-  z-index: 90 !important;
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 8px !important;
-}
-
-/* ========== 播放栏 ========== */
-#player-bar,
-.player-bar,
-#bottom-player,
-[class*="player"] {
-  position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  width: 100% !important;
-  max-width: 100vw !important;
-  z-index: 200 !important;
-  box-sizing: border-box !important;
-}
-
-/* ========== 主内容区域 ========== */
-.main-view,
-.content-area,
-.scene,
-.view,
-.page {
-  width: 100% !important;
-  max-width: 100vw !important;
-  padding: 70px 10px 100px !important;
-  box-sizing: border-box !important;
-  overflow-x: hidden !important;
-}
-
-/* ========== 弹窗和对话框 ========== */
-.wallpaper-picker-card,
-.playlist-select-dialog,
-.playlist-import-dialog,
-.modal-card,
-.dialog-card,
-.popup-card {
-  width: 95vw !important;
-  max-width: 95vw !important;
-  max-height: 85vh !important;
-  margin: 5vh auto !important;
-  padding: 15px !important;
-  box-sizing: border-box !important;
-  overflow-y: auto !important;
-}
-
-.wallpaper-picker-grid {
-  grid-template-columns: 1fr !important;
-  gap: 10px !important;
-}
-
-/* ========== 列表容器 ========== */
-.song-list,
-.track-list,
-.playlist-list,
-.result-list,
-.list-view {
-  width: 100% !important;
-  max-width: 100% !important;
-  max-height: calc(100vh - 200px) !important;
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
-  box-sizing: border-box !important;
-}
-
-/* ========== 列表项 ========== */
-.song-item,
-.track-item,
-.list-item,
-.row {
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 12px 8px !important;
-  box-sizing: border-box !important;
-  flex-wrap: wrap !important;
-}
-
-/* ========== 按钮和输入框 ========== */
-button,
-.btn,
-[role="button"] {
-  min-height: 44px !important;
-  min-width: 44px !important;
-  padding: 8px 12px !important;
-  font-size: 14px !important;
-}
-
-input,
-textarea,
-[contenteditable] {
-  font-size: 16px !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box !important;
-}
-
-/* ========== 图片和媒体 ========== */
-img,
-video,
-canvas {
-  max-width: 100% !important;
-  height: auto !important;
-}
-
-/* ========== 封面和可视化 ========== */
-.cover-art,
-.album-art,
-.visualizer {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
-  aspect-ratio: 1 !important;
-}
-
-/* ========== 歌词区域 ========== */
-.lyrics-container,
-.lyrics-view,
-.lyrics-panel {
-  width: 100% !important;
-  max-width: 100% !important;
-  max-height: 50vh !important;
-  overflow-y: auto !important;
-  padding: 10px !important;
-  box-sizing: border-box !important;
-}
-
-/* ========== 控制按钮 ========== */
-.control-btn,
-.play-btn,
-.prev-btn,
-.next-btn {
-  width: 48px !important;
-  height: 48px !important;
-  min-width: 48px !important;
-  min-height: 48px !important;
-}
-
-/* ========== 进度条 ========== */
-.progress-bar,
-.timeline {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: 20px !important;
-  padding: 8px 0 !important;
-}
-
-/* ========== 标签页 ========== */
-.tabs,
-.tab-bar {
-  width: 100% !important;
-  max-width: 100% !important;
-  overflow-x: auto !important;
-  white-space: nowrap !important;
-  -webkit-overflow-scrolling: touch !important;
-}
-
-.tab-item {
-  display: inline-block !important;
-  padding: 10px 15px !important;
-  min-width: 60px !important;
-}
-
-/* ========== 网格布局 ========== */
-.grid,
-.grid-view {
-  grid-template-columns: repeat(2, 1fr) !important;
-  gap: 10px !important;
-  padding: 10px !important;
-}
-
-/* ========== 侧边栏和面板 ========== */
-.sidebar,
-.side-panel,
-.drawer {
-  position: fixed !important;
-  left: 0 !important;
-  top: 0 !important;
-  bottom: 0 !important;
-  width: 80vw !important;
-  max-width: 300px !important;
-  z-index: 300 !important;
-  transform: translateX(-100%) !important;
-  transition: transform 0.3s !important;
-}
-
-.sidebar.open,
-.side-panel.open,
-.drawer.open {
-  transform: translateX(0) !important;
-}
-
-/* ========== 工具栏 ========== */
-.toolbar,
-.action-bar {
-  width: 100% !important;
-  max-width: 100% !important;
-  padding: 8px !important;
-  box-sizing: border-box !important;
-  flex-wrap: wrap !important;
-  gap: 8px !important;
-}
-
-/* ========== 响应式字体 ========== */
-@media (max-width: 768px) {
-  :root {
-    font-size: 14px !important;
+/* 检测移动端并应用样式 */
+@media (pointer: coarse), (hover: none) {
+  /* ========== 全局重置 ========== */
+  html, body {
+    overflow: auto !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    position: relative !important;
+    touch-action: pan-y !important;
+    -webkit-overflow-scrolling: touch !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
 
+  /* ========== 桌面端元素禁用 ========== */
+  #desktop-window-shell {
+    display: block !important;
+    position: relative !important;
+    inset: auto !important;
+    overflow: visible !important;
+    border-radius: 0 !important;
+    clip-path: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    width: 100% !important;
+    min-height: 100vh !important;
+    max-width: 100vw !important;
+  }
+
+  #desktop-titlebar,
+  .desktop-mode-btn,
+  .desktop-window-controls,
+  .desktop-resize-handle,
+  .desktop-drag-region,
+  #fullscreen-diy-zone {
+    display: none !important;
+  }
+
+  /* ========== 搜索区域 ========== */
+  #search-area {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    transform: none !important;
+    padding: 8px !important;
+    box-sizing: border-box !important;
+    z-index: 100 !important;
+  }
+
+  #search-stack {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #search-box {
+    width: 100% !important;
+    height: 44px !important;
+    border-radius: 12px !important;
+  }
+
+  /* ========== 搜索结果 ========== */
+  #search-results {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 60vh !important;
+    left: 0 !important;
+    right: 0 !important;
+  }
+
+  /* ========== 右上角按钮 ========== */
+  #top-right {
+    position: fixed !important;
+    top: 56px !important;
+    right: 8px !important;
+    z-index: 90 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+
+  /* ========== 播放栏 - 仅匹配ID ========== */
+  #player-bar,
+  #bottom-player {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    z-index: 200 !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ========== 主内容区域 ========== */
+  .main-view,
+  .content-area,
+  .scene,
+  .view,
+  .page {
+    width: 100% !important;
+    max-width: 100vw !important;
+    padding: 60px 8px 90px !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* ========== 弹窗和对话框 ========== */
+  .wallpaper-picker-card,
+  .playlist-select-dialog,
+  .playlist-import-dialog,
+  .modal-card,
+  .dialog-card,
+  .popup-card {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    max-height: 85vh !important;
+    margin: 5vh auto !important;
+    padding: 15px !important;
+    box-sizing: border-box !important;
+    overflow-y: auto !important;
+  }
+
+  .wallpaper-picker-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  /* ========== 列表容器 ========== */
+  .song-list,
+  .track-list,
+  .playlist-list,
+  .result-list,
+  .list-view {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ========== 列表项 ========== */
+  .song-item,
+  .track-item,
+  .list-item,
+  .row {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 10px 6px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ========== 输入框适配 ========== */
+  input,
+  textarea,
+  [contenteditable] {
+    font-size: 16px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ========== 图片和媒体 ========== */
+  img,
+  video,
+  canvas {
+    max-width: 100% !important;
+    height: auto !important;
+  }
+
+  /* ========== 封面 ========== */
+  .cover-art,
+  .album-art,
+  .visualizer {
+    max-width: 80vw !important;
+    max-height: 80vw !important;
+  }
+
+  /* ========== 歌词区域 ========== */
+  .lyrics-container,
+  .lyrics-view,
+  .lyrics-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 45vh !important;
+    overflow-y: auto !important;
+    padding: 10px !important;
+    box-sizing: border-box !important;
+  }
+
+  /* ========== 网格布局 ========== */
+  .grid,
+  .grid-view {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    padding: 8px !important;
+  }
+
+  /* ========== 侧边栏 ========== */
+  .sidebar,
+  .side-panel,
+  .drawer {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: 80vw !important;
+    max-width: 300px !important;
+    z-index: 300 !important;
+  }
+
+  /* ========== 标签页 ========== */
+  .tabs,
+  .tab-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: auto !important;
+    white-space: nowrap !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* ========== 开屏动画 ========== */
+  .splash-wordmark {
+    font-size: clamp(28px, 10vw, 50px) !important;
+    width: 90% !important;
+    min-width: auto !important;
+    height: auto !important;
+  }
+
+  .splash-signal-line {
+    width: 80% !important;
+  }
+
+  /* ========== 响应式字体 ========== */
   h1, .h1 {
-    font-size: 1.5em !important;
+    font-size: 1.4em !important;
   }
 
   h2, .h2 {
-    font-size: 1.3em !important;
+    font-size: 1.2em !important;
   }
 
   h3, .h3 {
     font-size: 1.1em !important;
   }
 
-  .splash-wordmark {
-    font-size: clamp(32px, 10vw, 60px) !important;
-    height: auto !important;
-    min-width: auto !important;
-    width: 90% !important;
+  /* ========== 小屏幕适配 ========== */
+  @media (max-width: 480px) {
+    .grid,
+    .grid-view {
+      grid-template-columns: 1fr !important;
+    }
+
+    .song-item .cover,
+    .track-item .cover {
+      width: 40px !important;
+      height: 40px !important;
+    }
   }
 
-  .splash-signal-line {
-    width: 80% !important;
-  }
-}
+  /* ========== 横屏适配 ========== */
+  @media (orientation: landscape) and (max-height: 500px) {
+    #player-bar,
+    #bottom-player {
+      height: 50px !important;
+    }
 
-/* ========== 小屏幕适配 ========== */
-@media (max-width: 480px) {
-  .grid,
-  .grid-view {
-    grid-template-columns: 1fr !important;
-  }
+    .main-view,
+    .content-area {
+      padding-bottom: 60px !important;
+    }
 
-  .song-item .cover,
-  .track-item .cover {
-    width: 40px !important;
-    height: 40px !important;
-  }
-}
-
-/* ========== 横屏适配 ========== */
-@media (orientation: landscape) and (max-height: 500px) {
-  #player-bar,
-  .player-bar {
-    height: 50px !important;
+    .cover-art,
+    .album-art {
+      max-height: 40vh !important;
+    }
   }
 
-  .main-view,
-  .content-area {
-    padding-bottom: 60px !important;
-  }
+  /* ========== 安全区域适配 ========== */
+  @supports (padding-top: env(safe-area-inset-top)) {
+    body {
+      padding-top: env(safe-area-inset-top) !important;
+      padding-left: env(safe-area-inset-left) !important;
+      padding-right: env(safe-area-inset-right) !important;
+    }
 
-  .cover-art,
-  .album-art {
-    max-height: 40vh !important;
-  }
-}
+    #search-area {
+      padding-top: calc(env(safe-area-inset-top) + 8px) !important;
+    }
 
-/* ========== 安全区域适配 ========== */
-@supports (padding-top: env(safe-area-inset-top)) {
-  body {
-    padding-top: env(safe-area-inset-top) !important;
-    padding-left: env(safe-area-inset-left) !important;
-    padding-right: env(safe-area-inset-right) !important;
-  }
+    #player-bar,
+    #bottom-player {
+      padding-bottom: env(safe-area-inset-bottom) !important;
+    }
 
-  #search-area {
-    padding-top: calc(env(safe-area-inset-top) + 8px) !important;
-  }
-
-  #player-bar,
-  .player-bar {
-    padding-bottom: env(safe-area-inset-bottom) !important;
-  }
-
-  .main-view,
-  .content-area {
-    padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
+    .main-view,
+    .content-area {
+      padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+    }
   }
 }
 
-/* ========== 强制宽度限制 ========== */
-* {
-  max-width: 100vw !important;
-  box-sizing: border-box !important;
+/* ========== 侧边滑动退出提示 ========== */
+#swipe-exit-hint {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
-/* ========== 溢出处理 ========== */
-.wallpaper-picker-card,
-.playlist-select-dialog,
-.playlist-import-dialog {
-  overflow: auto !important;
-  overflow-x: hidden !important;
-  overflow-y: auto !important;
+#swipe-exit-hint.left {
+  left: 10px;
+}
+
+#swipe-exit-hint.right {
+  right: 10px;
+}
+
+#swipe-exit-hint.show {
+  opacity: 1;
 }
