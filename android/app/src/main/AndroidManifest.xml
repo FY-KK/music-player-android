@@ -35,6 +35,7 @@
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
             android:exported="true"
+            android:screenOrientation="landscape"
             android:windowSoftInputMode="adjustResize">
 
             <intent-filter>
