@@ -620,7 +620,19 @@
     if (pn === '/api/lx-source/resolve') {
       var stored2 = loadStoredSource();
       if (stored2 && stored2.musicSearch && stored2.musicSearch.getMusicUrl) {
-        try { return await stored2.musicSearch.getMusicUrl(body.source, body.musicInfo, body.quality); } catch(e) {}
+        try {
+          var storedResult = await stored2.musicSearch.getMusicUrl(body.source, body.musicInfo, body.quality);
+          // 规范化返回格式：LX音源脚本可能返回纯URL字符串或 {url:...} 对象
+          if (typeof storedResult === 'string' && /^https?:\/\//i.test(storedResult)) {
+            return { ok: true, url: storedResult, quality: body.quality || '320k' };
+          }
+          if (storedResult && typeof storedResult === 'object') {
+            if (storedResult.url && !storedResult.ok) storedResult.ok = true;
+            if (storedResult.url) return storedResult;
+          }
+        } catch(e) {
+          console.warn('[Mineradio Mobile] 自定义音源解析失败，回退内置解析:', e.message);
+        }
       }
       // 内置平台解析
       var src = (body.source || '').toLowerCase();
@@ -666,7 +678,14 @@
     if (pn === '/api/lx-source/lyric') {
       var stored3 = loadStoredSource();
       if (stored3 && stored3.musicSearch && stored3.musicSearch.getLyric) {
-        try { return await stored3.musicSearch.getLyric(body.source, body.musicInfo); } catch(e) {}
+        try {
+          var storedLyric = await stored3.musicSearch.getLyric(body.source, body.musicInfo);
+          if (typeof storedLyric === 'string') return { ok: true, lyric: storedLyric };
+          if (storedLyric && typeof storedLyric === 'object' && !storedLyric.ok) storedLyric.ok = true;
+          if (storedLyric) return storedLyric;
+        } catch(e) {
+          console.warn('[Mineradio Mobile] 自定义音源歌词失败:', e.message);
+        }
       }
       // 内置平台歌词
       var lsrc = (body.source || '').toLowerCase();
