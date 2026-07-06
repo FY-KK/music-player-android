@@ -1,4 +1,4 @@
-// Mineradio Mobile Adapter v6 — 参照 Mineradio-Android 重构
+// Mineradio Mobile Adapter v7 — 参照 Mineradio_1.1.5 重构
 
 (function() {
   'use strict';
@@ -8,16 +8,30 @@
 
   if (!isMobile && !isSmallScreen) return;
 
-  console.log('[MobileAdapter] 初始化 v6');
+  console.log('[MobileAdapter] 初始化 v7');
 
   // ── 平台标记 ──
   window.__MINERADIO_ANDROID__ = true;
   window.__MINERADIO_PLATFORM__ = 'android';
 
-  // ── 添加 class 标记 ──
+  // ── 添加 class 和 data 属性标记 ──
   document.documentElement.classList.add('mobile-device');
+  document.body.classList.add('mobile-device');
   if (isMobile) document.documentElement.classList.add('is-mobile');
   if (/Android/i.test(navigator.userAgent)) document.documentElement.classList.add('is-android');
+
+  // ── data-screen / data-orientation (参照 1.1.5) ──
+  function updateScreenAttrs() {
+    var w = window.innerWidth;
+    var h = window.innerHeight;
+    document.body.setAttribute('data-screen', (w <= 760 || h <= 500) ? 'small' : 'large');
+    document.body.setAttribute('data-orientation', w > h ? 'landscape' : 'portrait');
+  }
+  updateScreenAttrs();
+  window.addEventListener('resize', updateScreenAttrs);
+  window.addEventListener('orientationchange', function() {
+    setTimeout(updateScreenAttrs, 200);
+  });
 
   // ── require() mock ──
   if (typeof window.require === 'undefined') {
@@ -307,62 +321,11 @@
   }
 
   // ══════════════════════════════════════════════
-  //  布局修复
+  //  布局修复 (CSS 已处理主要布局，仅修复溢出)
   // ══════════════════════════════════════════════
   function fixLayout() {
-    document.body.style.overflow = 'auto';
     document.body.style.overflowX = 'hidden';
-    document.body.style.overflowY = 'auto';
-    document.body.style.height = 'auto';
-    document.body.style.minHeight = '100vh';
-
-    document.documentElement.style.overflow = 'auto';
-    document.documentElement.style.overflowY = 'auto';
-    document.documentElement.style.height = 'auto';
-
-    var shell = document.getElementById('desktop-window-shell');
-    if (shell) {
-      shell.style.position = 'relative';
-      shell.style.inset = 'auto';
-      shell.style.overflow = 'visible';
-      shell.style.borderRadius = '0';
-      shell.style.clipPath = 'none';
-      shell.style.boxShadow = 'none';
-      shell.style.transform = 'none';
-    }
-
-    var emptyHome = document.getElementById('empty-home');
-    if (emptyHome) {
-      emptyHome.style.position = 'relative';
-      emptyHome.style.left = 'auto';
-      emptyHome.style.top = 'auto';
-      emptyHome.style.bottom = 'auto';
-      emptyHome.style.width = '100%';
-      emptyHome.style.maxWidth = '100%';
-      emptyHome.style.transform = 'none';
-      emptyHome.style.opacity = '1';
-      emptyHome.style.pointerEvents = 'auto';
-    }
-
-    var shells = document.querySelectorAll('.empty-home-shell');
-    shells.forEach(function(el) {
-      el.style.display = 'flex';
-      el.style.flexDirection = 'column';
-      el.style.gap = '12px';
-      el.style.height = 'auto';
-      el.style.minHeight = 'auto';
-    });
-
-    var searchArea = document.getElementById('search-area');
-    if (searchArea) {
-      searchArea.style.position = 'fixed';
-      searchArea.style.top = '0';
-      searchArea.style.left = '0';
-      searchArea.style.right = '0';
-      searchArea.style.width = '100%';
-      searchArea.style.transform = 'none';
-      searchArea.style.padding = '8px';
-    }
+    document.documentElement.style.overflowX = 'hidden';
   }
 
   // ══════════════════════════════════════════════

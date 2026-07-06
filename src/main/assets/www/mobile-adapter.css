@@ -1,505 +1,435 @@
-/* Mineradio Mobile Adapter v6 - 横屏布局 */
+/* Mineradio Mobile Adapter v7 — 参照 Mineradio_1.1.5 重构 */
 
-@media (pointer: coarse), (hover: none), (max-width: 768px) {
-  /* ========== 全局修复 ========== */
-  html, body {
-    overflow: auto !important;
-    overflow-x: hidden !important;
-    overflow-y: auto !important;
-    height: 100% !important;
-    min-height: 100vh !important;
-    touch-action: pan-y !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  /* ========== 背景图覆盖全屏 ========== */
-  #custom-bg,
-  #custom-bg::before,
-  #custom-bg::after,
-  #album-bg {
-    width: 100% !important;
-    height: 100% !important;
-    min-width: 100vw !important;
-    min-height: 100vh !important;
-  }
-
-  #custom-bg::before {
-    background-size: cover !important;
-    background-repeat: no-repeat !important;
-    background-position: center !important;
-  }
-
-  #album-bg {
-    background-size: cover !important;
-  }
-
-  /* ========== 桌面端元素禁用 ========== */
-  #desktop-window-shell {
-    display: block !important;
-    position: relative !important;
-    inset: auto !important;
-    overflow: visible !important;
-    border-radius: 0 !important;
-    clip-path: none !important;
-    box-shadow: none !important;
-    transform: none !important;
-    width: 100% !important;
-    min-height: 100vh !important;
-  }
-
-  #desktop-titlebar,
-  .desktop-mode-btn,
-  .desktop-window-controls,
-  .desktop-resize-handle,
-  .desktop-drag-region,
-  #fullscreen-diy-zone {
-    display: none !important;
-  }
-
-  /* ========== 搜索区域 ========== */
-  #search-area {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    transform: none !important;
-    padding: 8px 60px 8px 8px !important;
-    box-sizing: border-box !important;
-    z-index: 100 !important;
-    background: rgba(0, 0, 0, 0.3) !important;
-    backdrop-filter: blur(20px) !important;
-    -webkit-backdrop-filter: blur(20px) !important;
-  }
-
-  #search-stack {
-    width: 100% !important;
-    max-width: 100% !important;
-  }
-
-  #search-box {
-    width: 100% !important;
-    height: 40px !important;
-    border-radius: 10px !important;
-  }
-
-  #search-results {
-    width: 100% !important;
-    max-width: 100% !important;
-    max-height: 60vh !important;
-    left: 0 !important;
-  }
-
-  /* ========== 标签栏 ========== */
-  .search-mode-tabs {
-    width: 100% !important;
-    max-width: 100% !important;
-    overflow-x: auto !important;
-    white-space: nowrap !important;
-    -webkit-overflow-scrolling: touch !important;
-    flex-wrap: nowrap !important;
-  }
-
-  .search-mode-tabs button {
-    flex-shrink: 0 !important;
-    min-width: 50px !important;
-    font-size: 10px !important;
-  }
-
-  /* ========== 右上角按钮 (搜索栏右侧) ========== */
-  #top-right {
-    position: fixed !important;
-    top: 8px !important;
-    right: 8px !important;
-    z-index: 110 !important;
-  }
-
-  /* ========== 核心布局 - 横向排列 ========== */
-  #empty-home {
-    position: relative !important;
-    left: auto !important;
-    top: auto !important;
-    bottom: auto !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    transform: none !important;
-    padding: 10px !important;
-    padding-top: 56px !important;
-    box-sizing: border-box !important;
-    opacity: 1 !important;
-    pointer-events: auto !important;
-  }
-
-  /* 横向布局：左右排列 */
-  .empty-home-shell {
-    display: grid !important;
-    grid-template-columns: 1fr 1fr !important;
-    grid-template-rows: 1fr !important;
-    gap: 12px !important;
-    height: auto !important;
-    min-height: auto !important;
-    overflow: visible !important;
-    padding-bottom: 100px !important;
-  }
-
-  /* Hero区域 - 左侧 (每日热评) */
-  .home-hero {
-    grid-column: 1 !important;
-    grid-row: 1 !important;
-    min-height: auto !important;
-    padding: 14px !important;
-    border-radius: 18px !important;
-  }
-
-  .home-hero-inner {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-  }
-
-  .home-visual,
-  .home-mosaic {
-    display: none !important;
-  }
-
-  .home-title {
-    font-size: clamp(20px, 4vw, 32px) !important;
-    max-width: 100% !important;
-  }
-
-  .home-sub {
-    font-size: 11px !important;
-    max-width: 100% !important;
-    line-height: 1.4 !important;
-  }
-
-  /* ========== 右侧内容区 ========== */
-  .home-rail {
-    display: none !important;
-  }
-
-  .home-right-col {
-    grid-column: 2 !important;
-    grid-row: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 12px !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    max-height: 80vh !important;
-    padding-right: 4px !important;
-  }
-
-  .home-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
-    width: 100% !important;
-  }
-
-  /* ========== 歌单卡片 (独立) ========== */
-  .home-playlist-card {
-    min-height: 120px !important;
-    padding: 14px !important;
-    border-radius: 14px !important;
-    background: linear-gradient(145deg, rgba(33, 29, 34, 0.7), rgba(9, 10, 14, 0.82)) !important;
-    border: 1px solid rgba(255, 255, 255, 0.085) !important;
-    backdrop-filter: blur(30px) saturate(1.16) !important;
-    -webkit-backdrop-filter: blur(30px) saturate(1.16) !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3) !important;
-  }
-
-  .home-playlist-card-title {
-    font-size: 13px !important;
-    font-weight: 700 !important;
-    color: rgba(255, 255, 255, 0.9) !important;
-    margin-bottom: 2px !important;
-  }
-
-  .home-playlist-card-scroll {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 6px !important;
-    max-height: 200px !important;
-    overflow-y: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-  }
-
-  .home-playlist-card-item {
-    display: flex !important;
-    align-items: center !important;
-    gap: 10px !important;
-    padding: 8px !important;
-    border-radius: 10px !important;
-    background: rgba(255, 255, 255, 0.04) !important;
-    cursor: pointer !important;
-    transition: background 0.2s !important;
-  }
-
-  .home-playlist-card-item:active {
-    background: rgba(255, 255, 255, 0.1) !important;
-  }
-
-  .home-playlist-card-cover {
-    width: 36px !important;
-    height: 36px !important;
-    border-radius: 8px !important;
-    background-size: cover !important;
-    background-position: center !important;
-    background-color: rgba(255, 255, 255, 0.06) !important;
-    flex-shrink: 0 !important;
-  }
-
-  .home-playlist-card-info {
-    flex: 1 !important;
-    min-width: 0 !important;
-  }
-
-  .home-playlist-card-name {
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    color: rgba(255, 255, 255, 0.85) !important;
-    white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-  }
-
-  .home-playlist-card-count {
-    font-size: 9px !important;
-    color: rgba(255, 255, 255, 0.4) !important;
-    margin-top: 2px !important;
-  }
-
-  .home-playlist-card-empty {
-    flex: 1 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 8px !important;
-    color: rgba(255, 255, 255, 0.35) !important;
-    font-size: 11px !important;
-    text-align: center !important;
-    padding: 10px 0 !important;
-  }
-
-  .home-playlist-card-empty-btn {
-    height: 32px !important;
-    padding: 0 14px !important;
-    border-radius: 10px !important;
-    border: 1px solid rgba(157, 184, 207, 0.3) !important;
-    background: rgba(157, 184, 207, 0.1) !important;
-    color: rgba(255, 255, 255, 0.75) !important;
-    font-size: 11px !important;
-    font-weight: 600 !important;
-    cursor: pointer !important;
-    font-family: inherit !important;
-  }
-
-  /* ========== 歌单列表 - 横向2列 ========== */
-  .home-tile-row {
-    display: grid !important;
-    grid-template-columns: repeat(2, 1fr) !important;
-    gap: 8px !important;
-    width: 100% !important;
-  }
-
-  .home-tile {
-    min-height: 100px !important;
-    padding: 8px !important;
-    border-radius: 14px !important;
-  }
-
-  .home-tile-cover {
-    height: 50px !important;
-    border-radius: 10px !important;
-    margin-bottom: 6px !important;
-  }
-
-  .home-tile-title {
-    font-size: 10px !important;
-  }
-
-  /* ========== 歌单卡片 ========== */
-  .home-card {
-    min-height: 80px !important;
-    padding: 12px !important;
-    border-radius: 14px !important;
-  }
-
-  .home-card-title {
-    font-size: 12px !important;
-    max-width: 65% !important;
-  }
-
-  .home-card-sub {
-    font-size: 9px !important;
-    max-width: 60% !important;
-  }
-
-  .home-card-art {
-    width: 50px !important;
-    height: 50px !important;
-    border-radius: 12px !important;
-  }
-
-  /* ========== 每日热评 ========== */
-  .daily-review-card {
-    min-height: 200px !important;
-    padding: 16px !important;
-    border-radius: 14px !important;
-  }
-
-  .daily-review-time {
-    font-size: clamp(24px, 6vw, 40px) !important;
-  }
-
-  .daily-review-quote {
-    font-size: clamp(14px, 3vw, 20px) !important;
-    margin-top: 12px !important;
-  }
-
-  .daily-review-actions {
-    flex-wrap: wrap !important;
-    gap: 6px !important;
-    margin-top: 12px !important;
-  }
-
-  .daily-review-actions button {
-    height: 32px !important;
-    padding: 0 12px !important;
-    font-size: 11px !important;
-  }
-
-  /* ========== 播放栏 ========== */
-  #player-bar,
-  #bottom-player {
-    position: fixed !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    z-index: 200 !important;
-    box-sizing: border-box !important;
-  }
-
-  /* ========== 弹窗 ========== */
-  .wallpaper-picker-card,
-  .playlist-select-dialog,
-  .playlist-import-dialog {
-    width: 90vw !important;
-    max-width: 90vw !important;
-    max-height: 85vh !important;
-    margin: 5vh auto !important;
-    overflow: auto !important;
-  }
-
-  .wallpaper-picker-grid {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
-
-  /* ========== 区域标题 ========== */
-  .home-section-head {
-    min-height: 26px !important;
-    padding: 0 2px !important;
-    margin-bottom: 6px !important;
-  }
-
-  .home-section-title {
-    font-size: 12px !important;
-  }
-
-  .home-section-note {
-    font-size: 10px !important;
-  }
-
-  /* ========== 安全区域 ========== */
-  @supports (padding-top: env(safe-area-inset-top)) {
-    body {
-      padding-top: env(safe-area-inset-top) !important;
-    }
-
-    #search-area {
-      padding-top: calc(env(safe-area-inset-top) + 8px) !important;
-    }
-
-    #player-bar,
-    #bottom-player {
-      padding-bottom: env(safe-area-inset-bottom) !important;
-    }
-
-    .empty-home-shell {
-      padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
-    }
-  }
+/* ========== 小屏设备自适应 ========== */
+body[data-screen="small"] #search-area {
+  top: -30px;
+}
+body[data-screen="small"] #search-area.peek {
+  top: 14px;
+}
+body[data-screen="small"] #top-right {
+  top: 12px;
+}
+body[data-orientation="portrait"] #search-area {
+  left: 2vw;
+  right: 2vw;
+  width: auto;
 }
 
-/* ========== 超小屏幕适配 ========== */
-@media (pointer: coarse), (hover: none), (max-width: 480px) {
-  .empty-home-shell {
-    grid-template-columns: 1fr !important;
-  }
-
-  .home-hero {
-    grid-column: 1 !important;
-    grid-row: auto !important;
-  }
-
-  .home-right-col {
-    grid-column: 1 !important;
-    grid-row: auto !important;
-    max-height: none !important;
-  }
-
-  .home-tile-row {
-    grid-template-columns: repeat(2, 1fr) !important;
-  }
+/* ========== 核心布局 — 固定定位 ========== */
+body.mobile-device #empty-home {
+  position: fixed !important;
+  z-index: 4;
+  left: 50%;
+  top: 58px;
+  bottom: 58px;
+  width: calc(100vw - 24px);
+  max-width: 100%;
+  transform: translateX(-50%);
+  padding: 0;
+  box-sizing: border-box;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .72s cubic-bezier(.16,1,.3,1), transform .72s cubic-bezier(.16,1,.3,1);
+}
+body.mobile-device.empty-home-active #empty-home {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0) scale(1);
+}
+body.mobile-device.controls-visible #empty-home {
+  bottom: 128px;
 }
 
-/* ========== 横屏模式优化 ========== */
-@media (orientation: landscape) and (max-height: 500px) {
-  #empty-home {
-    padding-top: 50px !important;
-  }
+/* ========== 外壳网格 — 单列 ========== */
+body.mobile-device .empty-home-shell {
+  height: 100%;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto 1fr;
+  gap: 12px;
+  align-content: stretch;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,.12) transparent;
+}
 
-  .empty-home-shell {
-    grid-template-columns: 1fr 1.5fr !important;
-  }
+/* ========== Hero 区域 ========== */
+body.mobile-device .home-hero {
+  grid-column: 1;
+  grid-row: auto;
+  min-height: auto;
+  padding: 20px;
+  border-radius: 22px;
+}
+body.mobile-device .home-hero-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+body.mobile-device .home-visual,
+body.mobile-device .home-mosaic {
+  display: none;
+}
+body.mobile-device .home-title {
+  font-size: clamp(24px, 5vw, 36px);
+  max-width: 100%;
+}
+body.mobile-device .home-sub {
+  font-size: 11px;
+  max-width: 100%;
+  line-height: 1.4;
+}
 
-  .home-hero {
-    min-height: auto !important;
-    padding: 10px !important;
-  }
+/* ========== 右侧区域 ========== */
+body.mobile-device .home-right-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  grid-column: 1;
+  grid-row: auto;
+}
 
-  .home-title {
-    font-size: clamp(18px, 3vw, 28px) !important;
-  }
+body.mobile-device .home-rail {
+  display: none;
+}
 
-  .daily-review-card {
-    min-height: 140px !important;
-    padding: 12px !important;
-  }
+/* ========== 歌单卡片网格 ========== */
+body.mobile-device .home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+body.mobile-device .home-card {
+  min-height: 120px;
+  padding: 14px;
+  border-radius: 18px;
+}
+body.mobile-device .home-card-title {
+  font-size: 15px;
+  max-width: 68%;
+}
+body.mobile-device .home-card-sub {
+  font-size: 10px;
+  max-width: 62%;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+body.mobile-device .home-card-art {
+  width: 66px;
+  height: 66px;
+  border-radius: 15px;
+}
+body.mobile-device .home-card::after {
+  right: 72px;
+  width: 24px;
+  height: 44px;
+}
 
-  .home-playlist-card {
-    min-height: 100px !important;
-    padding: 10px !important;
-  }
+/* ========== 歌单列表 Tile ========== */
+body.mobile-device .home-tile-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+}
+body.mobile-device .home-tile {
+  min-height: 120px;
+  padding: 9px;
+  border-radius: 16px;
+}
+body.mobile-device .home-tile-cover {
+  height: 54px;
+  border-radius: 12px;
+  margin-bottom: 8px;
+}
+body.mobile-device .home-tile-title {
+  font-size: 11px;
+}
+body.mobile-device .home-tile-sub {
+  display: block;
+  font-size: 9px;
+}
 
-  .home-playlist-card-scroll {
-    max-height: 140px !important;
-  }
+/* ========== 歌单卡片容器 ========== */
+body.mobile-device #home-playlist-card-container {
+  display: block;
+  grid-column: 1;
+  grid-row: auto;
+}
+body.mobile-device .home-playlist-card {
+  min-height: 80px;
+  padding: 14px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(33,29,34,.64), rgba(9,10,14,.76));
+  border: 1px solid rgba(255,255,255,.085);
+  backdrop-filter: blur(30px) saturate(1.16);
+  -webkit-backdrop-filter: blur(30px) saturate(1.16);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 20px 64px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06);
+  overflow: hidden;
+}
+body.mobile-device .home-playlist-card-title {
+  font-size: 13px;
+  font-weight: 760;
+  color: rgba(255,255,255,.92);
+  margin-bottom: 2px;
+}
+body.mobile-device .home-playlist-card-scroll {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+body.mobile-device .home-playlist-card-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(255,255,255,.035);
+  cursor: pointer;
+  transition: background .2s, transform .2s;
+}
+body.mobile-device .home-playlist-card-item:active {
+  background: rgba(255,255,255,.10);
+  transform: scale(.98);
+}
+body.mobile-device .home-playlist-card-cover {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(255,255,255,.06);
+  flex-shrink: 0;
+}
+body.mobile-device .home-playlist-card-info {
+  flex: 1;
+  min-width: 0;
+}
+body.mobile-device .home-playlist-card-name {
+  font-size: 12px;
+  font-weight: 650;
+  color: rgba(255,255,255,.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.mobile-device .home-playlist-card-count {
+  font-size: 9px;
+  color: rgba(255,255,255,.42);
+  margin-top: 2px;
+}
+body.mobile-device .home-playlist-card-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: rgba(255,255,255,.35);
+  font-size: 12px;
+  text-align: center;
+  padding: 12px 0;
+}
+body.mobile-device .home-playlist-card-empty-btn {
+  height: 34px;
+  padding: 0 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(157,184,207,.30);
+  background: rgba(157,184,207,.10);
+  color: rgba(255,255,255,.75);
+  font-size: 11px;
+  font-weight: 650;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .2s, border-color .2s;
+}
+body.mobile-device .home-playlist-card-empty-btn:active {
+  background: rgba(157,184,207,.18);
+  border-color: rgba(157,184,207,.50);
+}
 
-  #player-bar,
-  #bottom-player {
-    height: 50px !important;
-  }
+/* ========== 每日热评 ========== */
+body.mobile-device .daily-review-card {
+  min-height: 180px;
+  padding: 16px;
+  border-radius: 14px;
+}
+body.mobile-device .daily-review-time {
+  font-size: clamp(24px, 6vw, 40px);
+}
+body.mobile-device .daily-review-quote {
+  font-size: clamp(14px, 3vw, 20px);
+  margin-top: 10px;
+}
+body.mobile-device .daily-review-actions {
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+body.mobile-device .daily-review-actions button {
+  height: 30px;
+  padding: 0 12px;
+  font-size: 11px;
+}
 
-  .empty-home-shell {
-    padding-bottom: 60px !important;
+/* ========== 搜索区域 — 默认隐藏，下滑召唤 ========== */
+body.mobile-device #search-area {
+  position: fixed;
+  z-index: 10;
+  top: -76px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(520px, 88vw);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: top .45s cubic-bezier(.2,.7,.2,1), opacity .35s;
+  opacity: 0;
+  pointer-events: none;
+}
+body.mobile-device #search-area.peek {
+  top: 14px;
+  opacity: 1;
+  pointer-events: auto;
+}
+body.mobile-device #search-stack {
+  width: 100%;
+  max-width: 100%;
+}
+body.mobile-device #search-box {
+  width: 100%;
+  height: 46px;
+  border-radius: 16px;
+}
+body.mobile-device #search-results {
+  width: 100%;
+  max-width: 100%;
+  max-height: 60vh;
+  left: 0;
+}
+
+/* ========== 标签栏 ========== */
+body.mobile-device .search-mode-tabs {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  -webkit-overflow-scrolling: touch;
+  flex-wrap: nowrap;
+}
+body.mobile-device .search-mode-tabs button {
+  flex-shrink: 0;
+  min-width: 50px;
+  font-size: 10px;
+}
+
+/* ========== 右上角按钮 ========== */
+body.mobile-device #top-right {
+  position: fixed;
+  z-index: 10;
+  top: 14px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ========== 播放栏 — 胶囊居中 ========== */
+body.mobile-device #player-bar,
+body.mobile-device #bottom-player {
+  position: fixed;
+  z-index: 6;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1080px, calc(100vw - 28px));
+  border-radius: 50px;
+  box-sizing: border-box;
+}
+body.mobile-device #player-bar.visible,
+body.mobile-device #bottom-player.visible {
+  opacity: .91;
+  pointer-events: auto;
+}
+
+/* ========== 桌面端元素禁用 ========== */
+body.mobile-device #desktop-titlebar,
+body.mobile-device .desktop-mode-btn,
+body.mobile-device .desktop-window-controls,
+body.mobile-device .desktop-resize-handle,
+body.mobile-device .desktop-drag-region,
+body.mobile-device #fullscreen-diy-zone {
+  display: none;
+}
+body.mobile-device #desktop-window-shell {
+  display: block;
+  position: relative;
+  inset: auto;
+  overflow: visible;
+  border-radius: 0;
+  clip-path: none;
+  box-shadow: none;
+  transform: none;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ========== 弹窗适配 ========== */
+body.mobile-device .wallpaper-picker-card,
+body.mobile-device .playlist-select-dialog,
+body.mobile-device .playlist-import-dialog {
+  width: 92vw;
+  max-width: 92vw;
+  max-height: 85vh;
+  margin: 5vh auto;
+  overflow: auto;
+  border-radius: 18px;
+}
+body.mobile-device .wallpaper-picker-grid {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+/* ========== 区域标题 ========== */
+body.mobile-device .home-section-head {
+  min-height: 26px;
+  padding: 0 2px;
+  margin-bottom: 4px;
+}
+body.mobile-device .home-section-title {
+  font-size: 12px;
+}
+body.mobile-device .home-section-note {
+  font-size: 10px;
+}
+
+/* ========== 安全区域 ========== */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body.mobile-device {
+    padding-top: env(safe-area-inset-top);
+  }
+  body.mobile-device #search-area.peek {
+    top: calc(env(safe-area-inset-top) + 14px);
+  }
+  body.mobile-device #top-right {
+    top: calc(env(safe-area-inset-top) + 14px);
+  }
+  body.mobile-device #player-bar,
+  body.mobile-device #bottom-player {
+    padding-bottom: env(safe-area-inset-bottom);
   }
 }
 
@@ -508,7 +438,7 @@
   position: fixed;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(0,0,0,.85);
   color: #fff;
   padding: 14px 22px;
   border-radius: 10px;
@@ -516,17 +446,9 @@
   z-index: 9999;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s;
+  transition: opacity .3s;
 }
-
-#swipe-exit-hint.left {
-  left: 10px;
-}
-
-#swipe-exit-hint.right {
-  right: 10px;
-}
-
-#swipe-exit-hint.show {
-  opacity: 1;
-}
+#swipe-exit-hint.left { left: 10px; }
+#swipe-exit-hint.right { right: 10px; }
+#swipe-exit-hint.center { left: 50%; transform: translate(-50%, -50%); }
+#swipe-exit-hint.show { opacity: 1; }
