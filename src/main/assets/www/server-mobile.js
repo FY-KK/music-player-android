@@ -39,11 +39,23 @@
   function getQqCookie() { try { return localStorage.getItem(QQ_COOKIE_KEY) || ''; } catch(e) { return ''; } }
   function setQqCookie(c) { try { localStorage.setItem(QQ_COOKIE_KEY, c || ''); } catch(e) {} }
 
+  function safeParseJson(data) {
+    if (typeof data === 'object' && data !== null) return data;
+    if (typeof data === 'string') {
+      try { return JSON.parse(data); } catch(e) {
+        // 尝试提取第一个JSON对象（某些API返回带注释的响应）
+        var m = data.match(/(\{[\s\S]*\}|\[[\s\S]*\])/);
+        if (m) { try { return JSON.parse(m[1]); } catch(e2) {} }
+        throw e;
+      }
+    }
+    return data;
+  }
+
   async function ncApi(pathStr, params, opts) {
     opts = opts || {};
     var url = NC_API + pathStr;
     var body = new URLSearchParams(params).toString();
-    // 优先使用原生 HTTP 插件绕过 CORS
     if (window.MineradioHttp) {
       var result = await window.MineradioHttp.request({
         url: url,
@@ -56,7 +68,7 @@
         },
         body: body,
       });
-      return JSON.parse(result.data);
+      return safeParseJson(result.data);
     }
     var resp = await fetch(url, {
       method: 'POST',
@@ -79,7 +91,12 @@
         headers: opts && opts.headers || {},
         body: opts && opts.body || null,
       });
-      return { json: function() { return JSON.parse(result.data); }, text: function() { return result.data; }, ok: result.ok, status: result.status };
+      return {
+        json: function() { return safeParseJson(result.data); },
+        text: function() { return typeof result.data === 'string' ? result.data : JSON.stringify(result.data); },
+        ok: result.ok,
+        status: result.status,
+      };
     }
     return fetch(url, opts);
   }
@@ -640,11 +657,19 @@
       var quality = body.quality || '320k';
       try {
         if (src === 'wy') {
+          var songId = info.id || info.songmid;
+          // 尝试 v1 API
+          try {
+            var urlData1 = await ncApi('/song/enhance/player/url/v1', { ids: JSON.stringify([songId]), level: quality === 'flac' ? 'exhigh' : quality === '320k' ? 'exhigh' : 'standard', encodeType: 'flac' });
+            var songUrl1 = urlData1 && urlData1.data && urlData1.data[0] && urlData1.data[0].url;
+            if (songUrl1) return { ok: true, url: songUrl1, quality: quality };
+          } catch(e1) {}
+          // 回退旧 API
           var br = quality === 'flac' ? 999000 : quality === '320k' ? 320000 : 128000;
-          var urlData = await ncApi('/song/enhance/player/url', { ids: JSON.stringify([info.id || info.songmid]), br: br });
+          var urlData = await ncApi('/song/enhance/player/url', { ids: JSON.stringify([songId]), br: br });
           var songUrl = urlData && urlData.data && urlData.data[0] && urlData.data[0].url;
           if (songUrl) return { ok: true, url: songUrl, quality: quality };
-          return { ok: false, error: '无法获取播放链接' };
+          return { ok: false, error: '无法获取播放链接（可能是VIP歌曲或地区限制）' };
         }
         if (src === 'tx') {
           var songmid = info.songmid || info.mid || info.id;
