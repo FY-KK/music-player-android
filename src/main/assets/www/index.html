@@ -412,6 +412,18 @@ html.local-only-mode body.home-has-library #empty-home .home-grid{
 .daily-review-crop-canvas.dragging{cursor:grabbing}
 .daily-review-crop-controls{width:min(360px,76vw);display:flex;align-items:center;gap:12px;margin-top:14px;color:rgba(255,255,255,.62);font-size:11px}
 .daily-review-crop-controls input{flex:1;accent-color:var(--fc-accent)}
+.home-hero-dual{display:grid;grid-template-columns:1fr 1fr;gap:14px;height:100%}
+.home-playlist-card{position:relative;z-index:2;min-height:420px;display:flex;flex-direction:column;gap:10px;padding:clamp(18px,2.5vw,28px);box-sizing:border-box;border-radius:28px;border:1px solid color-mix(in srgb,var(--home-accent) 22%,rgba(255,255,255,.085));background:linear-gradient(145deg,rgba(33,29,34,.64),rgba(9,10,14,.76) 48%,rgba(17,20,25,.70));box-shadow:0 28px 90px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.065);backdrop-filter:blur(30px) saturate(1.16);-webkit-backdrop-filter:blur(30px) saturate(1.16);overflow-y:auto}
+.home-playlist-card-title{font-size:15px;font-weight:760;color:rgba(255,255,255,.92);margin-bottom:4px}
+.home-playlist-card-item{display:flex;align-items:center;gap:12px;padding:10px;border-radius:14px;background:rgba(255,255,255,.035);cursor:pointer;transition:background .2s,transform .2s}
+.home-playlist-card-item:hover{background:rgba(255,255,255,.08);transform:translateY(-1px)}
+.home-playlist-card-cover{width:48px;height:48px;border-radius:10px;background-size:cover;background-position:center;background-color:rgba(255,255,255,.06);flex-shrink:0}
+.home-playlist-card-info{flex:1;min-width:0}
+.home-playlist-card-name{font-size:13px;font-weight:650;color:rgba(255,255,255,.88);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.home-playlist-card-count{font-size:10.5px;color:rgba(255,255,255,.42);margin-top:3px}
+.home-playlist-card-empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:rgba(255,255,255,.35);font-size:13px;text-align:center}
+.home-playlist-card-empty-btn{height:40px;padding:0 20px;border-radius:12px;border:1px solid rgba(157,184,207,.3);background:rgba(157,184,207,.1);color:rgba(255,255,255,.75);font-size:13px;font-weight:650;cursor:pointer;font-family:inherit;transition:background .2s,border-color .2s}
+.home-playlist-card-empty-btn:hover{background:rgba(157,184,207,.18);border-color:rgba(157,184,207,.5)}
 @media (max-width:760px){
   html.local-only-mode body.home-has-library #empty-home .empty-home-shell{grid-template-columns:1fr;grid-template-rows:minmax(360px,55vh) auto;overflow:auto}
   html.local-only-mode body.home-has-library #empty-home .home-hero{grid-column:1;grid-row:1;height:auto}
@@ -17317,21 +17329,92 @@ function renderDailyReviewHero() {
   var quote = selectedDailyReview();
   var image = '';
   try { image = localStorage.getItem(DAILY_REVIEW_IMAGE_KEY) || ''; } catch (_error) {}
-  hero.innerHTML =
-    '<div class="daily-review-card"' + (image ? ' style="background-image:url(&quot;' + escHtml(cssImageUrl(image)) + '&quot;)"' : '') + '>' +
-      '<div id="daily-review-date" class="daily-review-date"></div>' +
-      '<div id="daily-review-time" class="daily-review-time">--:--</div>' +
-      '<div class="daily-review-quote">“' + escHtml(quote.text) + '”</div>' +
-      '<div class="daily-review-source">— ' + escHtml(quote.source || '每日热评') + '</div>' +
-      '<div class="daily-review-actions">' +
-        '<button type="button" onclick="openDailyReviewImagePicker()">导入图片</button>' +
-        '<button type="button" onclick="openDailyReviewManager()">管理热评</button>' +
-        '<button type="button" onclick="nextDailyReview()">换一条</button>' +
+  var dailyHtml =
+    '<div class=”daily-review-card”' + (image ? ' style=”background-image:url(&quot;' + escHtml(cssImageUrl(image)) + '&quot;)”' : '') + '>' +
+      '<div id=”daily-review-date” class=”daily-review-date”></div>' +
+      '<div id=”daily-review-time” class=”daily-review-time”>--:--</div>' +
+      '<div class=”daily-review-quote”>”' + escHtml(quote.text) + '”</div>' +
+      '<div class=”daily-review-source”>— ' + escHtml(quote.source || '每日热评') + '</div>' +
+      '<div class=”daily-review-actions”>' +
+        '<button type=”button” onclick=”openDailyReviewImagePicker()”>导入图片</button>' +
+        '<button type=”button” onclick=”openDailyReviewManager()”>管理热评</button>' +
+        '<button type=”button” onclick=”nextDailyReview()”>换一条</button>' +
       '</div>' +
     '</div>';
+  var playlistHtml = renderHeroPlaylistCard();
+  hero.innerHTML = '<div class=”home-hero-dual”>' + dailyHtml + playlistHtml + '</div>';
   updateDailyReviewClock();
   if (dailyReviewClockTimer) clearInterval(dailyReviewClockTimer);
   dailyReviewClockTimer = setInterval(updateDailyReviewClock, 15000);
+}
+
+function renderHeroPlaylistCard() {
+  ensureLocalUserPlaylistsLoaded();
+  var folders = localFolderPlaylists || [];
+  var customLists = (userPlaylists || []).filter(function(pl){ return pl && pl.localUserPlaylist; });
+  var lxLists = lxMirrorPlaylists || [];
+  var allSongs = localSearchPool();
+  var hasPlaylists = folders.length || customLists.length || lxLists.length || allSongs.length;
+  if (!hasPlaylists) {
+    return '<div class=”home-playlist-card”>' +
+      '<div class=”home-playlist-card-title”>歌单</div>' +
+      '<div class=”home-playlist-card-empty”>' +
+        '<div>还没有歌单</div>' +
+        '<button class=”home-playlist-card-empty-btn” onclick=”openLocalFolderImport()”>导入歌单</button>' +
+      '</div>' +
+    '</div>';
+  }
+  var items = [];
+  if (allSongs.length) {
+    items.push({
+      name: '全部本地音乐',
+      count: allSongs.length + ' 首',
+      cover: allSongs[0] ? songCoverSrc(allSongs[0], 80) : '',
+      action: 'playLocalLibrarySong(0)'
+    });
+  }
+  customLists.forEach(function(list, i) {
+    var songs = list && Array.isArray(list.songs) ? list.songs : [];
+    items.push({
+      name: list.name || '我的歌单',
+      count: songs.length + ' 首',
+      cover: list.cover || (songs[0] ? songCoverSrc(songs[0], 80) : ''),
+      action: 'openLocalUserPlaylistInPanel(' + i + ')'
+    });
+  });
+  folders.forEach(function(folder, i) {
+    var songs = folder && Array.isArray(folder.songs) ? folder.songs : [];
+    items.push({
+      name: folder.name || '本地歌单',
+      count: songs.length + ' 首',
+      cover: songs[0] ? songCoverSrc(songs[0], 80) : '',
+      action: 'openLocalFolderPlaylistInPanel(' + i + ')'
+    });
+  });
+  lxLists.forEach(function(folder, i) {
+    var songs = folder && Array.isArray(folder.songs) ? folder.songs : [];
+    items.push({
+      name: folder.name || '落雪歌单',
+      count: songs.length + ' 首',
+      cover: songs[0] && songs[0].picUrl || '',
+      action: 'openLxMirrorPlaylist(' + i + ')'
+    });
+  });
+  var listHtml = items.slice(0, 6).map(function(item) {
+    var coverStyle = item.cover ? 'background-image:url(&quot;' + escHtml(cssImageUrl(item.cover)) + '&quot;)' : '';
+    return '<div class=”home-playlist-card-item” onclick=”' + item.action + '”>' +
+      '<div class=”home-playlist-card-cover” style=”' + coverStyle + '”></div>' +
+      '<div class=”home-playlist-card-info”>' +
+        '<div class=”home-playlist-card-name”>' + escHtml(item.name) + '</div>' +
+        '<div class=”home-playlist-card-count”>' + escHtml(item.count) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+  return '<div class=”home-playlist-card”>' +
+    '<div class=”home-playlist-card-title”>歌单</div>' +
+    listHtml +
+    (items.length > 6 ? '<div class=”home-playlist-card-count” style=”text-align:center;padding:4px;”>还有 ' + (items.length - 6) + ' 个歌单...</div>' : '') +
+  '</div>';
 }
 function nextDailyReview() {
   dailyReviewPreviewOffset += 1;
