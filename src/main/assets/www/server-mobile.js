@@ -384,6 +384,116 @@
         return new Response('audio fetch failed', { status: 502 });
       }
     }
+    // ══════════════════════════════════════════════
+    //  平台歌单导入
+    // ══════════════════════════════════════════════
+    window.platformPlaylistImport = {
+      importPlaylist: async function(body) {
+        var input = (body && body.input || '').trim();
+        var source = (body && body.source || 'tx').toLowerCase();
+        if (!input) return { ok: false, error: '请输入歌单链接或ID' };
+
+        try {
+          if (source === 'tx') return await importTxPlaylist(input);
+          if (source === 'wy') return await importWyPlaylist(input);
+          return { ok: false, error: '暂不支持该平台: ' + source };
+        } catch (e) {
+          console.warn('[PlatformPlaylistImport]', e);
+          return { ok: false, error: e.message || '导入失败' };
+        }
+      }
+    };
+
+    function extractTxPlaylistId(input) {
+      var m = input.match(/id=(\d+)/i) || input.match(/\/(\d{6,})/);
+      if (m) return m[1];
+      if (/^\d{6,}$/.test(input)) return input;
+      return null;
+    }
+
+    async function importTxPlaylist(input) {
+      var id = extractTxPlaylistId(input);
+      if (!id) return { ok: false, error: '无法识别QQ音乐歌单ID，请粘贴分享链接或数字ID' };
+      var url = 'https://c.y.qq.com/qzone/fcg-bin/fcg_ucc_getcdinfo_byids_cp.fcg?type=1&json=1&utf8=1&onlysong=0&new_format=1&disstid=' + id + '&platform=yqq.json';
+      var respText;
+      if (window.MineradioHttp) {
+        var r = await window.MineradioHttp.request({
+          url: url,
+          method: 'GET',
+          headers: { 'Referer': 'https://y.qq.com/', 'User-Agent': NC_UA },
+        });
+        respText = r.data;
+      } else {
+        var resp = await fetch(url, { headers: { 'Referer': 'https://y.qq.com/' } });
+        respText = await resp.text();
+      }
+      var json = JSON.parse(respText);
+      var cd = json && json.cdlist && json.cdlist[0];
+      if (!cd) return { ok: false, error: '未找到歌单，请检查链接是否正确' };
+      var songs = (cd.songlist || []).map(function(s) {
+        return {
+          name: s.songname || s.name || '',
+          artist: (s.singer || []).map(function(a) { return a.name; }).join('/') || '',
+          album: s.albumname || '',
+          duration: (s.interval || 0) * 1000,
+          picUrl: s.album && s.album.mid ? 'https://y.qq.com/music/photo_new/T002R300x300M000' + s.album.mid + '.jpg' : '',
+          source: 'tx',
+          id: 'tx_' + (s.songmid || s.mid || s.id || ''),
+          songmid: s.songmid || s.mid || '',
+        };
+      });
+      return {
+        ok: true,
+        playlist: {
+          id: 'tx_' + id,
+          name: cd.dissname || cd.name || 'QQ音乐歌单',
+          cover: cd.logo || '',
+          songs: songs,
+          source: 'tx',
+          imported: true,
+        }
+      };
+    }
+
+    function extractWyPlaylistId(input) {
+      var m = input.match(/playlist[\/\?#!=]*?(\d{4,})/i);
+      if (m) return m[1];
+      if (/^\d{4,}$/.test(input)) return input;
+      return null;
+    }
+
+    async function importWyPlaylist(input) {
+      var id = extractWyPlaylistId(input);
+      if (!id) return { ok: false, error: '无法识别网易云歌单ID，请粘贴分享链接或数字ID' };
+      var data = await ncApi('/playlist/detail', { id: id, n: 500 });
+      var pl = data && data.playlist;
+      if (!pl || !pl.tracks) return { ok: false, error: '未找到歌单，请检查链接是否正确' };
+      var songs = pl.tracks.map(function(t) {
+        var ar = (t.ar || t.artists || []).map(function(a) { return a.name; }).join('/');
+        var al = t.al || t.album || {};
+        return {
+          name: t.name || '',
+          artist: ar,
+          album: al.name || '',
+          duration: (t.dt || t.duration || 0),
+          picUrl: al.picUrl || '',
+          source: 'wy',
+          id: 'wy_' + t.id,
+        };
+      });
+      return {
+        ok: true,
+        playlist: {
+          id: 'wy_' + id,
+          name: pl.name || '网易云歌单',
+          cover: pl.coverImgUrl || '',
+          songs: songs,
+          source: 'wy',
+          imported: true,
+        }
+      };
+    }
+
     // LX Source (保留原有功能)
     if (pn === '/api/lx-source/status') {
       return {
