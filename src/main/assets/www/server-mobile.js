@@ -529,33 +529,140 @@
       };
     }
     if (pn === '/api/lx-source/search') {
+      // 优先使用用户导入的自定义音源
       var stored = loadStoredSource();
       if (stored && stored.musicSearch && stored.musicSearch.search) {
-        return await stored.musicSearch.search(q.q || q.keywords, { limit: Number(q.limit) || 30 });
+        try { return await stored.musicSearch.search(q.q || q.keywords, { limit: Number(q.limit) || 30 }); } catch(e) {}
       }
-      if (typeof lxSourceHost !== 'undefined' && lxSourceHost.search) {
-        return await lxSourceHost.search(q.q || q.keywords, { limit: Number(q.limit) || 30 });
+      // 内置多平台搜索
+      var query = q.q || q.keywords || '';
+      var limit = Math.min(Number(q.limit) || 12, 30);
+      var sources = (q.sources || 'tx,wy,kw,kg').split(',');
+      var allSongs = [];
+      var failures = [];
+
+      function durText(sec) {
+        sec = Math.max(0, Math.round(Number(sec) || 0));
+        return Math.floor(sec / 60) + ':' + String(sec % 60).padStart(2, '0');
       }
-      return { ok: false, error: 'Search not available' };
+
+      // 网易云搜索
+      async function searchWy() {
+        var data = await ncApi('/search/get', { s: query, type: 1, limit: limit, offset: 0, total: 'true' });
+        var list = (data && data.result && data.result.songs) || [];
+        return list.map(function(s) {
+          var ar = (s.artists || []).map(function(a) { return a.name; }).join('/');
+          var al = s.album || {};
+          return { id: s.id, songmid: s.id, name: s.name || '', singer: ar, albumName: al.name || '', albumId: al.id || '', picUrl: al.picUrl || '', interval: durText((s.duration || 0) / 1000), source: 'wy', types: ['flac', '320k', '128k'] };
+        });
+      }
+
+      // QQ音乐搜索
+      async function searchTx() {
+        var r = await qqSearch(query, limit, 0);
+        var list = (r && r.data && r.data.song && r.data.song.list) || [];
+        return list.map(function(s) {
+          var singer = (s.singer || []).map(function(a) { return a.name; }).join('/');
+          var albumMid = s.albummid || '';
+          return { id: s.songid || s.id, songmid: s.songmid || s.mid || '', name: s.songname || s.name || '', singer: singer, albumName: s.albumname || '', albumId: albumMid, albumMid: albumMid, strMediaMid: s.strMediaMid || s.songmid || '', picUrl: albumMid ? 'https://y.gtimg.cn/music/photo_new/T002R500x500M000' + albumMid + '.jpg' : '', interval: durText(s.interval), source: 'tx', types: ['flac', '320k', '128k'] };
+        });
+      }
+
+      // 酷我搜索
+      async function searchKw() {
+        var url = 'https://search.kuwo.cn/r.s?client=kt&all=' + encodeURIComponent(query) + '&pn=0&rn=' + limit + '&uid=794762570&ver=kwplayer_ar_9.2.2.1&vipver=1&show_copyright_off=1&newver=1&ft=music&cluster=0&strategy=2012&encoding=utf8&rformat=json&vermerge=1&mobi=1&issubtitle=1';
+        var resp = await ncFetch(url);
+        var data = await resp.json();
+        var list = (data && data.abslist) || [];
+        return list.map(function(s) {
+          return { id: String(s.MUSICRID || '').replace('MUSIC_', ''), songmid: String(s.MUSICRID || '').replace('MUSIC_', ''), name: s.SONGNAME || '', singer: s.ARTIST || '', albumName: s.ALBUM || '', albumId: s.ALBUMID || '', interval: durText(s.DURATION), source: 'kw', types: ['flac24bit', 'flac', '320k', '128k'] };
+        });
+      }
+
+      // 酷狗搜索
+      async function searchKg() {
+        var url = 'https://songsearch.kugou.com/song_search_v2?keyword=' + encodeURIComponent(query) + '&page=1&pagesize=' + limit + '&userid=0&platform=WebFilter&filter=2&iscorrection=1&privilege_filter=0&area_code=1&_=' + Date.now();
+        var resp = await ncFetch(url);
+        var data = await resp.json();
+        var list = (data && data.data && data.data.lists) || [];
+        return list.map(function(s) {
+          var singer = (s.Singers || []).map(function(a) { return a.name || a.singerName; }).filter(Boolean).join('、') || s.SingerName || '';
+          return { id: s.Audioid || s.FileHash || '', songmid: s.Audioid || s.FileHash || '', name: s.SongName || '', singer: singer, albumName: s.AlbumName || '', albumId: s.AlbumID || '', hash: s.FileHash || '', interval: durText(s.Duration), source: 'kg', types: ['flac24bit', 'flac', '320k', '128k'] };
+        });
+      }
+
+      var providers = { tx: searchTx, wy: searchWy, kw: searchKw, kg: searchKg };
+      var tasks = sources.filter(function(s) { return providers[s]; }).map(function(s) {
+        return providers[s]().catch(function(e) { failures.push({ source: s, error: e.message }); return []; });
+      });
+      var results = await Promise.all(tasks);
+      results.forEach(function(songs) { allSongs = allSongs.concat(songs); });
+      return { ok: true, songs: allSongs, failures: failures };
     }
     if (pn === '/api/lx-source/resolve') {
       var stored2 = loadStoredSource();
       if (stored2 && stored2.musicSearch && stored2.musicSearch.getMusicUrl) {
-        return await stored2.musicSearch.getMusicUrl(body.source, body.musicInfo, body.quality);
+        try { return await stored2.musicSearch.getMusicUrl(body.source, body.musicInfo, body.quality); } catch(e) {}
       }
-      if (typeof lxSourceHost !== 'undefined' && lxSourceHost.resolveMusicUrl) {
-        return await lxSourceHost.resolveMusicUrl(body.source, body.musicInfo, body.quality);
+      // 内置平台解析
+      var src = (body.source || '').toLowerCase();
+      var info = body.musicInfo || body;
+      var quality = body.quality || '320k';
+      try {
+        if (src === 'wy') {
+          var br = quality === 'flac' ? 999000 : quality === '320k' ? 320000 : 128000;
+          var urlData = await ncApi('/song/enhance/player/url', { ids: JSON.stringify([info.id || info.songmid]), br: br });
+          var songUrl = urlData && urlData.data && urlData.data[0] && urlData.data[0].url;
+          if (songUrl) return { ok: true, url: songUrl, quality: quality };
+          return { ok: false, error: '无法获取播放链接' };
+        }
+        if (src === 'tx') {
+          var songmid = info.songmid || info.mid || info.id;
+          var qUrl = await qqSongUrl(songmid, quality === 'flac' ? 'F000' : quality === '320k' ? 'M800' : 'M500');
+          if (qUrl && qUrl.data && qUrl.data.url) return { ok: true, url: qUrl.data.url, quality: quality };
+          return { ok: false, error: '无法获取播放链接' };
+        }
+        if (src === 'kw') {
+          var rid = info.songmid || info.id || info.MUSICRID || '';
+          rid = String(rid).replace('MUSIC_', '');
+          var kwUrl = 'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid=' + rid + '&format=mp3&quality=' + (quality === 'flac' ? '2000kflac' : quality === '320k' ? '320kmp3' : '128kmp3') + '&response=url';
+          var kwResp = await ncFetch(kwUrl);
+          var kwText = await kwResp.text();
+          if (kwText && kwText.startsWith('http')) return { ok: true, url: kwText.trim(), quality: quality };
+          return { ok: false, error: '无法获取播放链接' };
+        }
+        if (src === 'kg') {
+          var hash = info.hash || info.songmid || info.id || '';
+          var kgApiUrl = 'https://wwwapi.kugou.com/yy/index.php?r=play/getdata&hash=' + hash + '&appid=1014&mid=' + Date.now() + '&platid=4';
+          var kgResp = await ncFetch(kgApiUrl, { headers: { 'Cookie': 'kg_mid=' + Date.now() } });
+          var kgData = await kgResp.json();
+          var kgUrl = kgData && kgData.data && kgData.data.play_url;
+          if (kgUrl) return { ok: true, url: kgUrl, quality: quality };
+          return { ok: false, error: '无法获取播放链接' };
+        }
+      } catch(e) {
+        return { ok: false, error: '解析失败: ' + e.message };
       }
-      return { ok: false, error: 'Resolve not available' };
+      return { ok: false, error: '不支持的音源: ' + src };
     }
     if (pn === '/api/lx-source/lyric') {
       var stored3 = loadStoredSource();
       if (stored3 && stored3.musicSearch && stored3.musicSearch.getLyric) {
-        return await stored3.musicSearch.getLyric(body.source, body.musicInfo);
+        try { return await stored3.musicSearch.getLyric(body.source, body.musicInfo); } catch(e) {}
       }
-      if (typeof lxSourceHost !== 'undefined' && lxSourceHost.resolveLyrics) {
-        return await lxSourceHost.resolveLyrics(body.source, body.musicInfo);
-      }
+      // 内置平台歌词
+      var lsrc = (body.source || '').toLowerCase();
+      var linfo = body.musicInfo || body;
+      try {
+        if (lsrc === 'wy') {
+          var lData = await ncApi('/lyric', { id: linfo.id || linfo.songmid });
+          return { ok: true, lyric: (lData && lData.lrc && lData.lrc.lyric) || '', tlyric: (lData && lData.tlyric && lData.tlyric.lyric) || '' };
+        }
+        if (lsrc === 'tx') {
+          var lmid = linfo.songmid || linfo.mid || linfo.id;
+          return await qqLyric(lmid);
+        }
+      } catch(e) {}
       return { ok: false, error: 'Lyric not available' };
     }
     // LX 音源导入（支持文件导入 {fileName,script} 和链接导入 {url}）
