@@ -494,10 +494,31 @@
       };
     }
 
-    // LX Source (保留原有功能)
+    // ── 加载已导入的自定义音源脚本 ──
+    function loadStoredSource() {
+      try {
+        var script = localStorage.getItem('mineradio-lx-source-script');
+        if (!script) return null;
+        var m = { exports: {} };
+        var fn = new Function('module', 'exports', 'require', script);
+        fn(m, m.exports, function() { return {}; });
+        return m.exports.default || m.exports;
+      } catch(e) { return null; }
+    }
+
+    // LX Source
     if (pn === '/api/lx-source/status') {
+      var storedName = '';
+      var storedSources = [];
+      try { storedName = localStorage.getItem('mineradio-lx-source-name') || ''; } catch(e) {}
+      try { storedSources = JSON.parse(localStorage.getItem('mineradio-lx-sources') || '[]'); } catch(e) {}
+      var activeSource = '';
+      try { activeSource = localStorage.getItem('mineradio-lx-active-source') || ''; } catch(e) {}
       return {
         ok: true,
+        name: storedName,
+        activeSource: activeSource,
+        customSources: storedSources.map(function(s) { return { name: s.name, fileName: s.fileName, time: s.time }; }),
         sources: {
           wy: { available: true, name: '网易云音乐' },
           tx: { available: true, name: 'QQ音乐' },
@@ -508,75 +529,125 @@
       };
     }
     if (pn === '/api/lx-source/search') {
+      var stored = loadStoredSource();
+      if (stored && stored.musicSearch && stored.musicSearch.search) {
+        return await stored.musicSearch.search(q.q || q.keywords, { limit: Number(q.limit) || 30 });
+      }
       if (typeof lxSourceHost !== 'undefined' && lxSourceHost.search) {
         return await lxSourceHost.search(q.q || q.keywords, { limit: Number(q.limit) || 30 });
       }
       return { ok: false, error: 'Search not available' };
     }
     if (pn === '/api/lx-source/resolve') {
+      var stored2 = loadStoredSource();
+      if (stored2 && stored2.musicSearch && stored2.musicSearch.getMusicUrl) {
+        return await stored2.musicSearch.getMusicUrl(body.source, body.musicInfo, body.quality);
+      }
       if (typeof lxSourceHost !== 'undefined' && lxSourceHost.resolveMusicUrl) {
         return await lxSourceHost.resolveMusicUrl(body.source, body.musicInfo, body.quality);
       }
       return { ok: false, error: 'Resolve not available' };
     }
     if (pn === '/api/lx-source/lyric') {
+      var stored3 = loadStoredSource();
+      if (stored3 && stored3.musicSearch && stored3.musicSearch.getLyric) {
+        return await stored3.musicSearch.getLyric(body.source, body.musicInfo);
+      }
       if (typeof lxSourceHost !== 'undefined' && lxSourceHost.resolveLyrics) {
         return await lxSourceHost.resolveLyrics(body.source, body.musicInfo);
       }
       return { ok: false, error: 'Lyric not available' };
     }
-    // LX 音源导入
+    // LX 音源导入（支持文件导入 {fileName,script} 和链接导入 {url}）
     if (pn === '/api/lx-source/import') {
-      var sourceUrl = body.url || q.url || '';
-      if (!sourceUrl) return { ok: false, error: '请提供音源 URL' };
       try {
-        var resp;
-        if (window.MineradioHttp) {
-          var httpResult = await window.MineradioHttp.request({
-            url: sourceUrl,
-            method: 'GET',
-            headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36' },
-            timeout: 15000,
-          });
-          if (!httpResult.ok) return { ok: false, error: '下载音源失败: HTTP ' + httpResult.status };
-          resp = { text: function() { return httpResult.data; } };
-        } else {
-          resp = await fetch(sourceUrl);
-          if (!resp.ok) return { ok: false, error: '下载音源失败: HTTP ' + resp.status };
+        var scriptText = body.script || '';
+        var fileName = body.fileName || '';
+
+        // 链接导入：从 URL 下载脚本
+        if (!scriptText && (body.url || q.url)) {
+          var sourceUrl = body.url || q.url;
+          var resp;
+          if (window.MineradioHttp) {
+            var httpResult = await window.MineradioHttp.request({
+              url: sourceUrl,
+              method: 'GET',
+              headers: { 'User-Agent': 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36' },
+              timeout: 15000,
+            });
+            if (!httpResult.ok) return { ok: false, error: '下载音源失败: HTTP ' + httpResult.status };
+            resp = { text: function() { return httpResult.data; } };
+          } else {
+            resp = await fetch(sourceUrl);
+            if (!resp.ok) return { ok: false, error: '下载音源失败: HTTP ' + resp.status };
+          }
+          scriptText = await resp.text();
+          fileName = sourceUrl.split('/').pop() || 'source.js';
         }
-        var scriptText = await resp.text();
+
         if (!scriptText || scriptText.length < 10) return { ok: false, error: '音源内容为空或无效' };
+
+        // 解析脚本提取音源名称
+        var sourceName = '自定义音源';
         try {
           var sourceModule = { exports: {} };
           var moduleFn = new Function('module', 'exports', 'require', scriptText);
           moduleFn(sourceModule, sourceModule.exports, function() { return {}; });
           var exported = sourceModule.exports.default || sourceModule.exports;
           if (exported && typeof exported === 'object') {
-            var sourceName = exported.name || exported.sourceName || '自定义音源';
-            try { localStorage.setItem('mineradio-lx-source-name', sourceName); } catch(e) {}
-            try { localStorage.setItem('mineradio-lx-source-script', scriptText); } catch(e) {}
-            return { ok: true, name: sourceName, message: '音源导入成功: ' + sourceName };
+            sourceName = exported.name || exported.sourceName || fileName.replace(/\.js$/i, '') || '自定义音源';
           }
-          return { ok: true, name: '自定义音源', message: '音源脚本已导入' };
         } catch(evalErr) {
-          try { localStorage.setItem('mineradio-lx-source-script', scriptText); } catch(e) {}
-          return { ok: true, name: '自定义音源', message: '音源脚本已导入（未解析元数据）' };
+          // 解析失败仍允许导入
+          sourceName = fileName.replace(/\.js$/i, '') || '自定义音源';
         }
+
+        // 存储到 localStorage（支持多音源）
+        try {
+          var existingSources = [];
+          try { existingSources = JSON.parse(localStorage.getItem('mineradio-lx-sources') || '[]'); } catch(e) {}
+          var newSource = { name: sourceName, script: scriptText, fileName: fileName, time: Date.now() };
+          // 去重：同名覆盖
+          existingSources = existingSources.filter(function(s) { return s.name !== sourceName; });
+          existingSources.push(newSource);
+          localStorage.setItem('mineradio-lx-sources', JSON.stringify(existingSources));
+          localStorage.setItem('mineradio-lx-source-name', sourceName);
+          localStorage.setItem('mineradio-lx-source-script', scriptText);
+        } catch(e) {}
+
+        return { ok: true, name: sourceName, message: '音源导入成功: ' + sourceName };
       } catch(e) {
         return { ok: false, error: '导入失败: ' + e.message };
       }
     }
-    // LX 音源选择
+    // LX 音源选择（支持内置源和自定义源）
     if (pn === '/api/lx-source/select') {
       var selectedSource = body.source || q.source || '';
       if (!selectedSource) return { ok: false, error: '请指定音源' };
       var validSources = ['wy', 'tx', 'mg', 'kg', 'kw'];
-      if (validSources.indexOf(selectedSource) === -1) {
-        return { ok: false, error: '不支持的音源: ' + selectedSource };
-      }
-      try { localStorage.setItem('mineradio-lx-active-source', selectedSource); } catch(e) {}
       var sourceNames = { wy: '网易云音乐', tx: 'QQ音乐', mg: '咪咕音乐', kg: '酷狗音乐', kw: '酷我音乐' };
-      return { ok: true, source: selectedSource, name: sourceNames[selectedSource] || selectedSource };
+
+      if (validSources.indexOf(selectedSource) !== -1) {
+        // 选择内置源：清除自定义脚本
+        try { localStorage.setItem('mineradio-lx-active-source', selectedSource); } catch(e) {}
+        try { localStorage.removeItem('mineradio-lx-source-script'); } catch(e) {}
+        try { localStorage.setItem('mineradio-lx-source-name', sourceNames[selectedSource]); } catch(e) {}
+        return { ok: true, source: selectedSource, name: sourceNames[selectedSource], type: 'builtin' };
+      }
+
+      // 选择自定义源：从存储中查找并激活
+      try {
+        var storedSources = JSON.parse(localStorage.getItem('mineradio-lx-sources') || '[]');
+        var found = storedSources.find(function(s) { return s.name === selectedSource; });
+        if (found) {
+          localStorage.setItem('mineradio-lx-source-script', found.script);
+          localStorage.setItem('mineradio-lx-source-name', found.name);
+          localStorage.setItem('mineradio-lx-active-source', 'custom');
+          return { ok: true, source: 'custom', name: found.name, type: 'custom' };
+        }
+      } catch(e) {}
+
+      return { ok: false, error: '未找到音源: ' + selectedSource };
     }
     if (pn === '/api/platform-lyric') {
       var source = q.source || '';
