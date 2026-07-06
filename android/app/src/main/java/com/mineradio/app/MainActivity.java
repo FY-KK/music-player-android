@@ -14,14 +14,14 @@ public class MainActivity extends BridgeActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // 注册自定义 Capacitor 插件 — 必须在 super.onCreate() 之前
+        registerPlugin(MineradioHttpPlugin.class);
+        registerPlugin(MineradioAudioPlugin.class);
+
         super.onCreate(savedInstanceState);
 
         // 保持屏幕常亮
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-
-        // 注册自定义 Capacitor 插件
-        registerPlugin(MineradioHttpPlugin.class);
-        registerPlugin(MineradioAudioPlugin.class);
     }
 
     @Override
@@ -56,12 +56,16 @@ public class MainActivity extends BridgeActivity {
 
             lastBackPressTime = currentTime;
 
-            getBridge().getWebView().post(() -> {
-                getBridge().getWebView().evaluateJavascript(
-                    "if(typeof showBackPressHint === 'function') showBackPressHint();",
-                    null
-                );
-            });
+            if (getBridge() != null && getBridge().getWebView() != null) {
+                getBridge().getWebView().post(() -> {
+                    if (getBridge() != null && getBridge().getWebView() != null) {
+                        getBridge().getWebView().evaluateJavascript(
+                            "if(typeof showBackPressHint === 'function') showBackPressHint();",
+                            null
+                        );
+                    }
+                });
+            }
 
             return true;
         }

@@ -3,6 +3,7 @@ package com.mineradio.app;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
@@ -113,6 +114,10 @@ public class MineradioAudioPlugin extends Plugin {
 
         mediaSession = new MediaSession.Builder(ctx, player).build();
         createNotificationChannel(ctx);
+
+        // 启动前台播放服务，传递 MediaSession
+        Intent serviceIntent = new Intent(ctx, AudioPlaybackService.class);
+        ctx.startService(serviceIntent);
     }
 
     private void createNotificationChannel(Context ctx) {
@@ -159,6 +164,13 @@ public class MineradioAudioPlugin extends Plugin {
                 player.setMediaItem(itemBuilder.build());
                 player.prepare();
                 player.play();
+
+                // 确保服务已启动并传递 MediaSession
+                Context ctx = getContext();
+                if (ctx != null) {
+                    Intent serviceIntent = new Intent(ctx, AudioPlaybackService.class);
+                    ctx.startService(serviceIntent);
+                }
 
                 JSObject result = new JSObject();
                 result.put("ok", true);
@@ -242,6 +254,10 @@ public class MineradioAudioPlugin extends Plugin {
             player.setPlaybackSpeed(speed);
             call.resolve();
         });
+    }
+
+    public MediaSession getMediaSession() {
+        return mediaSession;
     }
 
     @Override
