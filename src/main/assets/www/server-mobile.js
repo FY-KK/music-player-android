@@ -635,67 +635,65 @@
       return { ok: true, songs: allSongs, failures: failures };
     }
     if (pn === '/api/lx-source/resolve') {
-      var stored2 = loadStoredSource();
-      if (stored2 && stored2.musicSearch && stored2.musicSearch.getMusicUrl) {
-        try {
-          var storedResult = await stored2.musicSearch.getMusicUrl(body.source, body.musicInfo, body.quality);
-          // 规范化返回格式：LX音源脚本可能返回纯URL字符串或 {url:...} 对象
-          if (typeof storedResult === 'string' && /^https?:\/\//i.test(storedResult)) {
-            return { ok: true, url: storedResult, quality: body.quality || '320k' };
-          }
-          if (storedResult && typeof storedResult === 'object') {
-            if (storedResult.url && !storedResult.ok) storedResult.ok = true;
-            if (storedResult.url) return storedResult;
-          }
-        } catch(e) {
-          console.warn('[Mineradio Mobile] 自定义音源解析失败，回退内置解析:', e.message);
-        }
-      }
-      // 内置平台解析
       var src = (body.source || '').toLowerCase();
       var info = body.musicInfo || body;
       var quality = body.quality || '320k';
+      console.log('[Resolve] source=' + src + ' id=' + (info.id || info.songmid || '') + ' quality=' + quality);
+
+      // 内置平台解析（直接使用，不依赖自定义音源脚本）
       try {
         if (src === 'wy') {
           var songId = info.id || info.songmid;
+          if (!songId) return { ok: false, error: '缺少歌曲ID' };
           // 尝试 v1 API
           try {
             var urlData1 = await ncApi('/song/enhance/player/url/v1', { ids: JSON.stringify([songId]), level: quality === 'flac' ? 'exhigh' : quality === '320k' ? 'exhigh' : 'standard', encodeType: 'flac' });
             var songUrl1 = urlData1 && urlData1.data && urlData1.data[0] && urlData1.data[0].url;
-            if (songUrl1) return { ok: true, url: songUrl1, quality: quality };
-          } catch(e1) {}
+            if (songUrl1) { console.log('[Resolve] wy v1 OK'); return { ok: true, url: songUrl1, quality: quality }; }
+          } catch(e1) { console.warn('[Resolve] wy v1 failed:', e1.message); }
           // 回退旧 API
           var br = quality === 'flac' ? 999000 : quality === '320k' ? 320000 : 128000;
-          var urlData = await ncApi('/song/enhance/player/url', { ids: JSON.stringify([songId]), br: br });
-          var songUrl = urlData && urlData.data && urlData.data[0] && urlData.data[0].url;
-          if (songUrl) return { ok: true, url: songUrl, quality: quality };
+          try {
+            var urlData = await ncApi('/song/enhance/player/url', { ids: JSON.stringify([songId]), br: br });
+            var songUrl = urlData && urlData.data && urlData.data[0] && urlData.data[0].url;
+            if (songUrl) { console.log('[Resolve] wy old OK'); return { ok: true, url: songUrl, quality: quality }; }
+          } catch(e2) { console.warn('[Resolve] wy old failed:', e2.message); }
           return { ok: false, error: '无法获取播放链接（可能是VIP歌曲或地区限制）' };
         }
         if (src === 'tx') {
           var songmid = info.songmid || info.mid || info.id;
+          if (!songmid) return { ok: false, error: '缺少songmid' };
+          console.log('[Resolve] tx songmid=' + songmid);
           var qUrl = await qqSongUrl(songmid, quality === 'flac' ? 'F000' : quality === '320k' ? 'M800' : 'M500');
-          if (qUrl && qUrl.data && qUrl.data.url) return { ok: true, url: qUrl.data.url, quality: quality };
-          return { ok: false, error: '无法获取播放链接' };
+          console.log('[Resolve] tx result code=' + (qUrl && qUrl.code));
+          if (qUrl && qUrl.data && qUrl.data.url) { console.log('[Resolve] tx OK'); return { ok: true, url: qUrl.data.url, quality: quality }; }
+          return { ok: false, error: qUrl && qUrl.message || '无法获取播放链接' };
         }
         if (src === 'kw') {
           var rid = info.songmid || info.id || info.MUSICRID || '';
           rid = String(rid).replace('MUSIC_', '');
+          if (!rid) return { ok: false, error: '缺少歌曲ID' };
+          console.log('[Resolve] kw rid=' + rid);
           var kwUrl = 'https://antiserver.kuwo.cn/anti.s?type=convert_url3&rid=' + rid + '&format=mp3&quality=' + (quality === 'flac' ? '2000kflac' : quality === '320k' ? '320kmp3' : '128kmp3') + '&response=url';
           var kwResp = await ncFetch(kwUrl);
           var kwText = await kwResp.text();
-          if (kwText && kwText.startsWith('http')) return { ok: true, url: kwText.trim(), quality: quality };
+          console.log('[Resolve] kw response=' + String(kwText).slice(0, 80));
+          if (kwText && /^https?:\/\//i.test(String(kwText).trim())) { console.log('[Resolve] kw OK'); return { ok: true, url: String(kwText).trim(), quality: quality }; }
           return { ok: false, error: '无法获取播放链接' };
         }
         if (src === 'kg') {
           var hash = info.hash || info.songmid || info.id || '';
+          if (!hash) return { ok: false, error: '缺少hash' };
+          console.log('[Resolve] kg hash=' + hash);
           var kgApiUrl = 'https://wwwapi.kugou.com/yy/index.php?r=play/getdata&hash=' + hash + '&appid=1014&mid=' + Date.now() + '&platid=4';
           var kgResp = await ncFetch(kgApiUrl, { headers: { 'Cookie': 'kg_mid=' + Date.now() } });
           var kgData = await kgResp.json();
           var kgUrl = kgData && kgData.data && kgData.data.play_url;
-          if (kgUrl) return { ok: true, url: kgUrl, quality: quality };
+          if (kgUrl) { console.log('[Resolve] kg OK'); return { ok: true, url: kgUrl, quality: quality }; }
           return { ok: false, error: '无法获取播放链接' };
         }
       } catch(e) {
+        console.error('[Resolve] error:', src, e);
         return { ok: false, error: '解析失败: ' + e.message };
       }
       return { ok: false, error: '不支持的音源: ' + src };
