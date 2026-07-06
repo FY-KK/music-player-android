@@ -6,6 +6,24 @@
 
   console.log('[Mineradio Mobile] API bridge loading...');
 
+  // ── MineradioHttp 原生 HTTP 桥接（必须在 fetch 拦截前就绪） ──
+  if (!window.MineradioHttp && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.MineradioHttp) {
+    window.MineradioHttp = {
+      request: function(opts) {
+        return window.Capacitor.Plugins.MineradioHttp.request(opts);
+      }
+    };
+    console.log('[Mineradio Mobile] MineradioHttp 桥接已就绪');
+  } else if (!window.MineradioHttp && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.MinoradioHttp) {
+    // 兼容拼写变体
+    window.MineradioHttp = {
+      request: function(opts) {
+        return window.Capacitor.Plugins.MinoradioHttp.request(opts);
+      }
+    };
+    console.log('[Mineradio Mobile] MineradioHttp 桥接已就绪 (MinoradioHttp)');
+  }
+
   // ══════════════════════════════════════════════
   //  网易云 API
   // ══════════════════════════════════════════════

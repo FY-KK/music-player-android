@@ -40,15 +40,14 @@
 
   // ── MineradioHttp 原生 HTTP 桥接 ──
   // 将 Capacitor 插件暴露为 window.MineradioHttp，供 server-mobile.js 绕过 CORS
-  if (!window.MineradioHttp && window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.MinoradioHttp) {
-    window.MineradioHttp = {
-      request: function(opts) {
-        return window.Capacitor.Plugins.MinoradioHttp.request(opts);
-      }
-    };
-    console.log('[MobileAdapter] MineradioHttp 桥接已就绪');
-  } else if (!window.MineradioHttp) {
-    console.warn('[MobileAdapter] MineradioHttp 插件不可用，跨域请求将受限');
+  if (!window.MineradioHttp && window.Capacitor && window.Capacitor.Plugins) {
+    var plugin = window.Capacitor.Plugins.MineradioHttp || window.Capacitor.Plugins.MinoradioHttp;
+    if (plugin) {
+      window.MineradioHttp = { request: function(opts) { return plugin.request(opts); } };
+      console.log('[MobileAdapter] MineradioHttp 桥接已就绪');
+    } else {
+      console.warn('[MobileAdapter] MineradioHttp 插件不可用，跨域请求将受限');
+    }
   }
 
   // ══════════════════════════════════════════════
